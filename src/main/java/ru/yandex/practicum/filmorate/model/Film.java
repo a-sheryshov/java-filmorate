@@ -13,18 +13,19 @@ import java.time.LocalDate;
 @EqualsAndHashCode(callSuper = true)
 @ToString
 public class Film extends AbstractEntity {
-    final LocalDate cinemaCreationDate = LocalDate.of(1895,12,28);
+    private static final LocalDate CINEMA_CREATION_DATE = LocalDate.of(1895,12,28);
+    public static final int MAX_DESCRIPTION_LEN = 200;
     @NotBlank(message = "Name is mandatory")
     String name;
-    @Size(max = 200, message = "Description is too long")
+    @Size(max = MAX_DESCRIPTION_LEN, message = "Description is too long")
     String description;
     @NotNull(message = "Name is mandatory")
     LocalDate releaseDate;
     @Positive(message = "Should be greater than 0")
     int duration;
 
-    @AssertTrue(message = "Release date should be greater than 1895-12-28")
+    @AssertTrue(message = "Release date can't be less than cinema creation date")
     private boolean isValidReleaseDate(){
-        return !releaseDate.isBefore(cinemaCreationDate);
+        return !releaseDate.isBefore(CINEMA_CREATION_DATE);
     }
 }
