@@ -1,27 +1,33 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import ru.yandex.practicum.filmorate.service.UserService;
+import ru.yandex.practicum.filmorate.storage.InMemoryUserStorage;
 
 import java.util.stream.Stream;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest
-@AutoConfigureMockMvc
-@TestInstance(TestInstance.Lifecycle.PER_METHOD)
 class UserControllerTest {
-    @Autowired
+
     private MockMvc mvc;
+
+    @BeforeEach
+    void setup() {
+        this.mvc = MockMvcBuilders.standaloneSetup(
+                new UserController(new UserService(new InMemoryUserStorage()
+                ))).build();
+    }
 
     @DisplayName("Scenario: make bad POST request expect code 400")
     @MethodSource("postBadRequestTestSource")
@@ -63,7 +69,7 @@ class UserControllerTest {
         return Stream.of(
                 Arguments.of("valid user", "/users", "{\"login\": \"testlogin\", \"name\": \"testName\"," +
                         "\"email\":\"ya@mail.ru\", \"birthday\": \"1999-08-09\"}"),
-                Arguments.of(  "valid noname user","/users", "{\"login\": \"logi\", \"email\":\"m@ya.ru\"," +
+                Arguments.of("valid noname user", "/users", "{\"login\": \"logi\", \"email\":\"m@ya.ru\"," +
                         "\"birthday\": \"1986-08-20\"}")
         );
     }
@@ -80,16 +86,16 @@ class UserControllerTest {
     private static Stream<Arguments> putInvalidRequestTestSource() {
         return Stream.of(
                 Arguments.of("empty request", "/users", ""),
-                Arguments.of("no email","/users", "{ \"id\": 1,\"login\": \"login\", \"name\": \"name\"," +
+                Arguments.of("no email", "/users", "{ \"id\": 1,\"login\": \"login\", \"name\": \"name\"," +
                         "\"birthday\": \"1999-09-09\"}"),
                 Arguments.of("wrong email", "/users", "{ \"id\": 1,\"login\": \"login\", \"name\": \"name\"," +
                         "\"email\":\"123ya.ru\", \"birthday\": \"1946-08-20\"}"),
-                Arguments.of("wrong email","/users", "{ \"id\": 1,\"login\": \"log\", \"name\": \"test\"," +
+                Arguments.of("wrong email", "/users", "{ \"id\": 1,\"login\": \"log\", \"name\": \"test\"," +
                         "\"email\":\"mailmail.ru@\", \"birthday\": \"1999-09-09\"}"),
-                Arguments.of("empty request","/users", ""),
-                Arguments.of("login includes spaces","/users", "{ \"id\": 1,\"login\": \"ni gol\"" +
+                Arguments.of("empty request", "/users", ""),
+                Arguments.of("login includes spaces", "/users", "{ \"id\": 1,\"login\": \"ni gol\"" +
                         ", \"email\": \"ya@gmail.com\",\"birthday\": \"1999-09-09\"}"),
-                Arguments.of("wrong birthday","/users", "{ \"id\": 1,\"login\": \"nigol\", \"email\": \"mail@ya.ya\"," +
+                Arguments.of("wrong birthday", "/users", "{ \"id\": 1,\"login\": \"nigol\", \"email\": \"mail@ya.ya\"," +
                         "\"birthday\": \"2111-11-11\"}")
         );
     }
@@ -105,9 +111,9 @@ class UserControllerTest {
 
     private static Stream<Arguments> putValidRequestTestSource() {
         return Stream.of(
-                Arguments.of("init user","/users", "{\"login\": \"before\", \"name\": \"before\", \"id\": 1," +
+                Arguments.of("init user", "/users", "{\"login\": \"before\", \"name\": \"before\", \"id\": 1," +
                         "\"email\": \"before@yandex.ru\",\"birthday\": \"1999-09-09\"}"),
-                Arguments.of("update user","/users", "{\"login\": \"after\", \"name\": \"after\",  \"id\": 1," +
+                Arguments.of("update user", "/users", "{\"login\": \"after\", \"name\": \"after\",  \"id\": 1," +
                         "\"email\":\"after@mail.ru\", \"birthday\": \"1999-08-08\"}")
         );
     }
@@ -125,7 +131,7 @@ class UserControllerTest {
         return Stream.of(
                 Arguments.of("positive wrong id", "/users", "{\"id\": 999,\"login\": \"loglog\", \"name\": \"testtest\"," +
                         "\"email\":\"ya@ya.ru\", \"birthday\": \"1989-09-29\"}"),
-                Arguments.of("negative id","/users", "{ \"id\": -1,\"login\": \"ololo\", \"name\": \"tatatat\"," +
+                Arguments.of("negative id", "/users", "{ \"id\": -1,\"login\": \"ololo\", \"name\": \"tatatat\"," +
                         "\"email\":\"ma@ya.ru\", \"birthday\": \"1999-06-26\"}")
         );
     }

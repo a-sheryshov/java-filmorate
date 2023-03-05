@@ -1,39 +1,32 @@
 package ru.yandex.practicum.filmorate.controller;
 
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.validation.annotation.Validated;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.service.FilmService;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.validation.Valid;
-import java.util.List;
+import java.util.Collection;
 
 @RestController
 @RequestMapping("/films")
-@Slf4j
-@Validated
-public class FilmController extends AbstractController<Film> {
-
-    @PostMapping
-    public Film createFilmAction(@Valid @RequestBody Film film
-            , HttpServletRequest request){
-        save(film);
-        log.info(INFO_LOG_MSG_RGX,
-                request.getMethod(), request.getRequestURI(), film.getId());
-        return film;
-    }
-    @PutMapping
-    public Film updateFilmAction(@Valid @RequestBody Film film
-            , HttpServletRequest request){
-        update(film);
-        log.info(INFO_LOG_MSG_RGX,
-                request.getMethod(), request.getRequestURI(), film.getId());
-        return film;
-    }
-    @GetMapping
-    public List<Film> getAllFilmsAction() {
-        return getAll();
+public class FilmController extends AbstractModelController<Film, FilmService> {
+    @Autowired
+    public FilmController(FilmService service) {
+        super(service);
     }
 
+    @PutMapping("/{id}/like/{userId}")
+    public void addLike(@PathVariable Long id, @PathVariable Long userId) {
+        service.addLike(id, userId);
+    }
+
+    @DeleteMapping("/{id}/like/{userId}")
+    public void deleteLike(@PathVariable Long id, @PathVariable Long userId) {
+        service.deleteLike(id, userId);
+    }
+
+    @GetMapping("/popular")
+    public Collection<Film> findPopularMovies(@RequestParam(defaultValue = "10") int count) {
+        return service.getPopular(count);
+    }
 }
