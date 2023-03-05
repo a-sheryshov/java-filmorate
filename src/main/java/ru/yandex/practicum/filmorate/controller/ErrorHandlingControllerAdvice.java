@@ -3,14 +3,17 @@ package ru.yandex.practicum.filmorate.controller;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 import ru.yandex.practicum.filmorate.entity.AppError;
-import ru.yandex.practicum.filmorate.exception.ObjectNotFoundException;
 import ru.yandex.practicum.filmorate.entity.ValidationErrorResponse;
 import ru.yandex.practicum.filmorate.entity.Violation;
+import ru.yandex.practicum.filmorate.exception.ObjectNotFoundException;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.validation.ConstraintViolationException;
+import javax.validation.Path;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -22,19 +25,23 @@ public class ErrorHandlingControllerAdvice {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ValidationErrorResponse onConstraintValidationException(
             ConstraintViolationException e
-            , HttpServletRequest request
     ) {
         final List<Violation> violations = e.getConstraintViolations().stream()
                 .map(
-                        violation -> new Violation(
-                                violation.getPropertyPath().toString(),
-                                violation.getMessage()
-                        )
+                        violation -> {
+                            String name = "";
+                            for (Path.Node node : violation.getPropertyPath()) {
+                                name = node.getName();
+                            }
+                            return new Violation(name,
+                                    violation.getMessage()
+                            );
+                        }
                 )
                 .collect(Collectors.toList());
         StringBuilder logMessage = new StringBuilder();
         logMessage.append("Constraint validation exception: ");
-        violations.forEach(violation -> logMessage.append(violation.getMessage()+ ", "));
+        violations.forEach(violation -> logMessage.append(violation.getMessage()).append(", "));
         log.error(logMessage.toString());
         return new ValidationErrorResponse(violations);
     }
@@ -50,10 +57,11 @@ public class ErrorHandlingControllerAdvice {
                 .collect(Collectors.toList());
         StringBuilder logMessage = new StringBuilder();
         logMessage.append("MethodArgumentNotValid exception: ");
-        violations.forEach(violation -> logMessage.append(violation.getMessage()+ ", "));
+        violations.forEach(violation -> logMessage.append(violation.getMessage()).append(", "));
         log.error(logMessage.toString());
         return new ValidationErrorResponse(violations);
     }
+
     @ExceptionHandler(ObjectNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     @ResponseBody

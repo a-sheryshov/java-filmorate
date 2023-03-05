@@ -1,49 +1,37 @@
 package ru.yandex.practicum.filmorate.controller;
 
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.validation.annotation.Validated;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.UserService;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.validation.Valid;
-import java.util.List;
-import java.util.Optional;
+import java.util.Collection;
 
 @RestController
 @RequestMapping("/users")
-@Slf4j
-@Validated
-public class UserController extends AbstractController<User> {
-    @PostMapping
-    public User createUserAction(@Valid @RequestBody User user
-            , HttpServletRequest request) {
-        checkName(user);
-        save(user);
-        log.info(INFO_LOG_MSG_RGX,
-                request.getMethod(), request.getRequestURI(), user.getId());
-        return user;
+public class UserController extends AbstractModelController<User, UserService> {
+    @Autowired
+    public UserController(UserService service) {
+        super(service);
     }
 
-    @PutMapping
-    public User updateUserAction(@Valid @RequestBody User user
-            , HttpServletRequest request) {
-        checkName(user);
-        update(user);
-        log.info(INFO_LOG_MSG_RGX,
-                request.getMethod(), request.getRequestURI(), user.getId());
-        return user;
+    @PutMapping("/{id}/friends/{userId}")
+    public void addFriend(@PathVariable Long id, @PathVariable Long userId) {
+        service.addFriend(id, userId);
     }
 
-    @GetMapping
-    public List<User> getAllUsersAction() {
-        return getAll();
+    @DeleteMapping("/{id}/friends/{userId}")
+    public void deleteFriend(@PathVariable Long id, @PathVariable Long userId) {
+        service.deleteFriend(id, userId);
     }
 
-    private void checkName(final User user) {
-        Optional<String> optionalName = Optional.ofNullable(user.getName());
-        optionalName.ifPresentOrElse((name) -> {
-        }, () -> user.setName(user.getLogin()));
+    @GetMapping("/{id}/friends")
+    public Collection<User> getFriends(@PathVariable Long id) {
+        return service.getFriends(id);
     }
 
+    @GetMapping("/{id}/friends/common/{userId}")
+    public Collection<User> getCommonFriends(@PathVariable Long id, @PathVariable Long userId) {
+        return service.getCommonFriends(id, userId);
+    }
 }
