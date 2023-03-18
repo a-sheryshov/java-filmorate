@@ -1,8 +1,7 @@
 package ru.yandex.practicum.filmorate.controller;
 
-
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.AbstractModel;
 import ru.yandex.practicum.filmorate.service.ModelService;
@@ -11,14 +10,10 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.Collection;
 
 @Slf4j
+@RequiredArgsConstructor
 public abstract class AbstractModelController<T extends AbstractModel, S extends ModelService<T>> {
     static final String INFO_LOG_MSG_RGX = "Request '{}' to '{}', objectId: {}";
     final S service;
-
-    @Autowired
-    public AbstractModelController(S service) {
-        this.service = service;
-    }
 
     @PostMapping
     public T create(@RequestBody final T data, HttpServletRequest request) {

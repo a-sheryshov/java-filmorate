@@ -1,9 +1,12 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
@@ -14,7 +17,10 @@ import java.util.stream.Stream;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest
+@AutoConfigureMockMvc
+@TestInstance(TestInstance.Lifecycle.PER_METHOD)
 class FilmControllerTest {
+    @Autowired
     private MockMvc mvc;
 
     @DisplayName("Scenario: make bad POST request expect code 400")
@@ -97,10 +103,10 @@ class FilmControllerTest {
         );
     }
 
-    @DisplayName("Scenario: make wrong ID PUT request expect code 404")
+    @DisplayName("Scenario: make not existing ID PUT request expect code 404")
     @MethodSource("putNotExistingIdTestSource")
     @ParameterizedTest(name = "{index} Test with {0}")
-    public void putInvalidIdTest(String name, String urlTemplate, String body) throws Exception {
+    public void putNotExistingIdTest(String name, String urlTemplate, String body) throws Exception {
         mvc.perform(MockMvcRequestBuilders.put(urlTemplate)
                         .content(body).contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound());
@@ -109,7 +115,21 @@ class FilmControllerTest {
     private static Stream<Arguments> putNotExistingIdTestSource() {
         return Stream.of(
                 Arguments.of("wrong ID", "/films", "{ \"id\": 777, \"name\": \"port-wine\",  \"description\": \"777\"," +
-                        "\"releaseDate\": \"1977-07-07\",  \"duration\": 77}"),
+                        "\"releaseDate\": \"1977-07-07\",  \"duration\": 77}")
+        );
+    }
+
+    @DisplayName("Scenario: make negative ID PUT request expect code 400")
+    @MethodSource("putNegativeIdTestSource")
+    @ParameterizedTest(name = "{index} Test with {0}")
+    public void putNegativeIdTest(String name, String urlTemplate, String body) throws Exception {
+        mvc.perform(MockMvcRequestBuilders.put(urlTemplate)
+                        .content(body).contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
+    }
+
+    private static Stream<Arguments> putNegativeIdTestSource() {
+        return Stream.of(
                 Arguments.of("negative ID", "/films", "{ \"id\": -777, \"name\": \"port-wine\",  \"description\": \"777\"," +
                         "\"releaseDate\": \"1977-07-07\",  \"duration\": 77}")
         );

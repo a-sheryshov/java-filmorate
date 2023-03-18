@@ -1,33 +1,29 @@
 package ru.yandex.practicum.filmorate.controller;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import ru.yandex.practicum.filmorate.service.UserService;
-import ru.yandex.practicum.filmorate.storage.InMemoryUserStorage;
+
 
 import java.util.stream.Stream;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest
+@AutoConfigureMockMvc
+@TestInstance(TestInstance.Lifecycle.PER_METHOD)
 class UserControllerTest {
 
+    @Autowired
     private MockMvc mvc;
-
-    @BeforeEach
-    void setup() {
-        this.mvc = MockMvcBuilders.standaloneSetup(
-                new UserController(new UserService(new InMemoryUserStorage()
-                ))).build();
-    }
 
     @DisplayName("Scenario: make bad POST request expect code 400")
     @MethodSource("postBadRequestTestSource")
@@ -118,10 +114,10 @@ class UserControllerTest {
         );
     }
 
-    @DisplayName("\"Scenario: make wrong ID PUT request expect code 404\"")
+    @DisplayName("\"Scenario: make not existing ID PUT request expect code 404\"")
     @MethodSource("putNotExistingIdTestSource")
     @ParameterizedTest(name = "{index} Test with {0}")
-    public void putInvalidIdTest(String name, String urlTemplate, String body) throws Exception {
+    public void putNotExistingIdTest(String name, String urlTemplate, String body) throws Exception {
         mvc.perform(MockMvcRequestBuilders.put(urlTemplate)
                         .content(body).contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound());
@@ -130,7 +126,21 @@ class UserControllerTest {
     private static Stream<Arguments> putNotExistingIdTestSource() {
         return Stream.of(
                 Arguments.of("positive wrong id", "/users", "{\"id\": 999,\"login\": \"loglog\", \"name\": \"testtest\"," +
-                        "\"email\":\"ya@ya.ru\", \"birthday\": \"1989-09-29\"}"),
+                        "\"email\":\"ya@ya.ru\", \"birthday\": \"1989-09-29\"}")
+        );
+    }
+
+    @DisplayName("\"Scenario: make negative ID PUT request expect code 400\"")
+    @MethodSource("putNegativeIdTestSource")
+    @ParameterizedTest(name = "{index} Test with {0}")
+    public void putInvalidIdTest(String name, String urlTemplate, String body) throws Exception {
+        mvc.perform(MockMvcRequestBuilders.put(urlTemplate)
+                        .content(body).contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
+    }
+
+    private static Stream<Arguments> putNegativeIdTestSource() {
+        return Stream.of(
                 Arguments.of("negative id", "/users", "{ \"id\": -1,\"login\": \"ololo\", \"name\": \"tatatat\"," +
                         "\"email\":\"ma@ya.ru\", \"birthday\": \"1999-06-26\"}")
         );
