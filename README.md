@@ -1,6 +1,6 @@
 # java-filmorate
 
-Filmorate is an API service that helps you chose a movie to watch.
+Filmorate is an API service that helps you choose a movie to watch.
 
 STORAGING IN DB SOON!
 DB SCHEME ->
