@@ -1,7 +1,7 @@
 package ru.yandex.practicum.filmorate.service;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import ru.yandex.practicum.filmorate.exception.ObjectNotFoundException;
 import ru.yandex.practicum.filmorate.model.AbstractModel;
@@ -13,14 +13,10 @@ import java.util.Collection;
 
 @Validated
 @Slf4j
+@RequiredArgsConstructor
 public abstract class AbstractModelService<T extends AbstractModel> implements ModelService<T> {
     final ModelStorage<T> storage;
     private long counter = 0L;
-
-    @Autowired
-    public AbstractModelService(ModelStorage<T> storage) {
-        this.storage = storage;
-    }
 
     public T create(@Valid final T data) {
         data.setId(++counter);
