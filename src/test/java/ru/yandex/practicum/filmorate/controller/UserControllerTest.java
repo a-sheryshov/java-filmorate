@@ -12,6 +12,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
+
 import java.util.stream.Stream;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -20,6 +21,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @TestInstance(TestInstance.Lifecycle.PER_METHOD)
 class UserControllerTest {
+
     @Autowired
     private MockMvc mvc;
 
@@ -63,7 +65,7 @@ class UserControllerTest {
         return Stream.of(
                 Arguments.of("valid user", "/users", "{\"login\": \"testlogin\", \"name\": \"testName\"," +
                         "\"email\":\"ya@mail.ru\", \"birthday\": \"1999-08-09\"}"),
-                Arguments.of(  "valid noname user","/users", "{\"login\": \"logi\", \"email\":\"m@ya.ru\"," +
+                Arguments.of("valid noname user", "/users", "{\"login\": \"logi\", \"email\":\"m@ya.ru\"," +
                         "\"birthday\": \"1986-08-20\"}")
         );
     }
@@ -80,16 +82,16 @@ class UserControllerTest {
     private static Stream<Arguments> putInvalidRequestTestSource() {
         return Stream.of(
                 Arguments.of("empty request", "/users", ""),
-                Arguments.of("no email","/users", "{ \"id\": 1,\"login\": \"login\", \"name\": \"name\"," +
+                Arguments.of("no email", "/users", "{ \"id\": 1,\"login\": \"login\", \"name\": \"name\"," +
                         "\"birthday\": \"1999-09-09\"}"),
                 Arguments.of("wrong email", "/users", "{ \"id\": 1,\"login\": \"login\", \"name\": \"name\"," +
                         "\"email\":\"123ya.ru\", \"birthday\": \"1946-08-20\"}"),
-                Arguments.of("wrong email","/users", "{ \"id\": 1,\"login\": \"log\", \"name\": \"test\"," +
+                Arguments.of("wrong email", "/users", "{ \"id\": 1,\"login\": \"log\", \"name\": \"test\"," +
                         "\"email\":\"mailmail.ru@\", \"birthday\": \"1999-09-09\"}"),
-                Arguments.of("empty request","/users", ""),
-                Arguments.of("login includes spaces","/users", "{ \"id\": 1,\"login\": \"ni gol\"" +
+                Arguments.of("empty request", "/users", ""),
+                Arguments.of("login includes spaces", "/users", "{ \"id\": 1,\"login\": \"ni gol\"" +
                         ", \"email\": \"ya@gmail.com\",\"birthday\": \"1999-09-09\"}"),
-                Arguments.of("wrong birthday","/users", "{ \"id\": 1,\"login\": \"nigol\", \"email\": \"mail@ya.ya\"," +
+                Arguments.of("wrong birthday", "/users", "{ \"id\": 1,\"login\": \"nigol\", \"email\": \"mail@ya.ya\"," +
                         "\"birthday\": \"2111-11-11\"}")
         );
     }
@@ -105,17 +107,17 @@ class UserControllerTest {
 
     private static Stream<Arguments> putValidRequestTestSource() {
         return Stream.of(
-                Arguments.of("init user","/users", "{\"login\": \"before\", \"name\": \"before\", \"id\": 1," +
+                Arguments.of("init user", "/users", "{\"login\": \"before\", \"name\": \"before\", \"id\": 1," +
                         "\"email\": \"before@yandex.ru\",\"birthday\": \"1999-09-09\"}"),
-                Arguments.of("update user","/users", "{\"login\": \"after\", \"name\": \"after\",  \"id\": 1," +
+                Arguments.of("update user", "/users", "{\"login\": \"after\", \"name\": \"after\",  \"id\": 1," +
                         "\"email\":\"after@mail.ru\", \"birthday\": \"1999-08-08\"}")
         );
     }
 
-    @DisplayName("\"Scenario: make wrong ID PUT request expect code 404\"")
+    @DisplayName("\"Scenario: make not existing ID PUT request expect code 404\"")
     @MethodSource("putNotExistingIdTestSource")
     @ParameterizedTest(name = "{index} Test with {0}")
-    public void putInvalidIdTest(String name, String urlTemplate, String body) throws Exception {
+    public void putNotExistingIdTest(String name, String urlTemplate, String body) throws Exception {
         mvc.perform(MockMvcRequestBuilders.put(urlTemplate)
                         .content(body).contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound());
@@ -124,8 +126,22 @@ class UserControllerTest {
     private static Stream<Arguments> putNotExistingIdTestSource() {
         return Stream.of(
                 Arguments.of("positive wrong id", "/users", "{\"id\": 999,\"login\": \"loglog\", \"name\": \"testtest\"," +
-                        "\"email\":\"ya@ya.ru\", \"birthday\": \"1989-09-29\"}"),
-                Arguments.of("negative id","/users", "{ \"id\": -1,\"login\": \"ololo\", \"name\": \"tatatat\"," +
+                        "\"email\":\"ya@ya.ru\", \"birthday\": \"1989-09-29\"}")
+        );
+    }
+
+    @DisplayName("\"Scenario: make negative ID PUT request expect code 400\"")
+    @MethodSource("putNegativeIdTestSource")
+    @ParameterizedTest(name = "{index} Test with {0}")
+    public void putInvalidIdTest(String name, String urlTemplate, String body) throws Exception {
+        mvc.perform(MockMvcRequestBuilders.put(urlTemplate)
+                        .content(body).contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
+    }
+
+    private static Stream<Arguments> putNegativeIdTestSource() {
+        return Stream.of(
+                Arguments.of("negative id", "/users", "{ \"id\": -1,\"login\": \"ololo\", \"name\": \"tatatat\"," +
                         "\"email\":\"ma@ya.ru\", \"birthday\": \"1999-06-26\"}")
         );
     }

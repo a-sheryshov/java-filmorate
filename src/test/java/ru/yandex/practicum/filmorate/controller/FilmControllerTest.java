@@ -103,10 +103,10 @@ class FilmControllerTest {
         );
     }
 
-    @DisplayName("Scenario: make wrong ID PUT request expect code 404")
+    @DisplayName("Scenario: make not existing ID PUT request expect code 404")
     @MethodSource("putNotExistingIdTestSource")
     @ParameterizedTest(name = "{index} Test with {0}")
-    public void putInvalidIdTest(String name, String urlTemplate, String body) throws Exception {
+    public void putNotExistingIdTest(String name, String urlTemplate, String body) throws Exception {
         mvc.perform(MockMvcRequestBuilders.put(urlTemplate)
                         .content(body).contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound());
@@ -115,7 +115,21 @@ class FilmControllerTest {
     private static Stream<Arguments> putNotExistingIdTestSource() {
         return Stream.of(
                 Arguments.of("wrong ID", "/films", "{ \"id\": 777, \"name\": \"port-wine\",  \"description\": \"777\"," +
-                        "\"releaseDate\": \"1977-07-07\",  \"duration\": 77}"),
+                        "\"releaseDate\": \"1977-07-07\",  \"duration\": 77}")
+        );
+    }
+
+    @DisplayName("Scenario: make negative ID PUT request expect code 400")
+    @MethodSource("putNegativeIdTestSource")
+    @ParameterizedTest(name = "{index} Test with {0}")
+    public void putNegativeIdTest(String name, String urlTemplate, String body) throws Exception {
+        mvc.perform(MockMvcRequestBuilders.put(urlTemplate)
+                        .content(body).contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
+    }
+
+    private static Stream<Arguments> putNegativeIdTestSource() {
+        return Stream.of(
                 Arguments.of("negative ID", "/films", "{ \"id\": -777, \"name\": \"port-wine\",  \"description\": \"777\"," +
                         "\"releaseDate\": \"1977-07-07\",  \"duration\": 77}")
         );
