@@ -2,7 +2,8 @@ package ru.yandex.practicum.filmorate.storage;
 
 import ru.yandex.practicum.filmorate.model.AbstractModel;
 
-import java.util.Collection;
+import java.util.List;
+
 
 public interface ModelStorage<T extends AbstractModel> {
     T create(T t);
@@ -13,5 +14,5 @@ public interface ModelStorage<T extends AbstractModel> {
 
     T read(Long id);
 
-    Collection<T> readAll();
+    List<T> readAll();
 }

@@ -9,7 +9,7 @@ import ru.yandex.practicum.filmorate.storage.ModelStorage;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Positive;
-import java.util.Collection;
+import java.util.List;
 
 @Validated
 @Slf4j
@@ -35,7 +35,7 @@ public abstract class AbstractModelService<T extends AbstractModel> implements M
         return storage.read(id);
     }
 
-    public Collection<T> readAll() {
+    public List<T> readAll() {
         return storage.readAll();
     }
 

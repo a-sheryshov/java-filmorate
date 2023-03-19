@@ -5,11 +5,11 @@ import ru.yandex.practicum.filmorate.model.AbstractModel;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Positive;
-import java.util.Collection;
+import java.util.List;
 
 @Validated
 public interface ModelService<E extends AbstractModel> {
-    Collection<E> readAll();
+    List<E> readAll();
 
     E read(@Valid @Positive final Long id);
 

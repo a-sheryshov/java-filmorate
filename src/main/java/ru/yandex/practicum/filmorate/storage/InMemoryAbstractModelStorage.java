@@ -4,8 +4,9 @@ import ru.yandex.practicum.filmorate.exception.ObjectNotFoundException;
 import ru.yandex.practicum.filmorate.model.AbstractModel;
 
 import javax.validation.constraints.NotNull;
-import java.util.Collection;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public abstract class InMemoryAbstractModelStorage<T extends AbstractModel> implements ModelStorage<T> {
@@ -42,8 +43,8 @@ public abstract class InMemoryAbstractModelStorage<T extends AbstractModel> impl
         }
     }
 
-    public Collection<T> readAll() {
-        return storage.values();
+    public List<T> readAll() {
+        return new ArrayList<>(storage.values());
     }
 
 }

@@ -7,12 +7,12 @@ import ru.yandex.practicum.filmorate.model.AbstractModel;
 import ru.yandex.practicum.filmorate.service.ModelService;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.Collection;
+import java.util.List;
 
 @Slf4j
 @RequiredArgsConstructor
 public abstract class AbstractModelController<T extends AbstractModel, S extends ModelService<T>> {
-    static final String INFO_LOG_MSG_RGX = "Request '{}' to '{}', objectId: {}";
+    private static final String INFO_LOG_MSG_RGX = "Request '{}' to '{}', objectId: {}";
     final S service;
 
     @PostMapping
@@ -44,7 +44,7 @@ public abstract class AbstractModelController<T extends AbstractModel, S extends
     }
 
     @GetMapping
-    public Collection<T> readAll() {
+    public List<T> readAll() {
         return service.readAll();
     }
 
