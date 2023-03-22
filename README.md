@@ -1,4 +1,8 @@
 # java-filmorate
-Repository for Filmorate project.
 
-Filmorate is an API service that helps you select a movie to watch.
+Filmorate is an API service that helps you choose a movie to watch.
+
+STORAGING IN DB AVAILABLE!
+
+DB SCHEME ->
+![DB SCHEME](./db-scheme.png)
