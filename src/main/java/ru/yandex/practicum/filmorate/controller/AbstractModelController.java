@@ -29,13 +29,6 @@ public abstract class AbstractModelController<T extends AbstractModel, S extends
         return service.update(data);
     }
 
-    @DeleteMapping("/{id}")
-    public void delete(@PathVariable final Long id, HttpServletRequest request) {
-        log.info(INFO_LOG_MSG_RGX,
-                request.getMethod(), request.getRequestURI(), id);
-        service.delete(id);
-    }
-
     @GetMapping("/{id}")
     public T read(@PathVariable final Long id, HttpServletRequest request) {
         log.info(INFO_LOG_MSG_RGX,

@@ -22,7 +22,7 @@ public class UserController extends AbstractModelController<User, UserService> {
 
     @DeleteMapping("/{id}/friends/{userId}")
     public void deleteFriend(@PathVariable Long id, @PathVariable Long userId) {
-        service.deleteFriend(id, userId);
+        service.removeFriend(id, userId);
     }
 
     @GetMapping("/{id}/friends")

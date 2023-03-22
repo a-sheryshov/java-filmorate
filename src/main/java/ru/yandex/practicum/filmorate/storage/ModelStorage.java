@@ -10,8 +10,6 @@ public interface ModelStorage<T extends AbstractModel> {
 
     T update(T t);
 
-    void delete(Long id);
-
     T read(Long id);
 
     List<T> readAll();
