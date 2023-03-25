@@ -6,8 +6,8 @@ import javax.validation.constraints.Size;
 
 @Getter
 @Setter
-@AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
+@AllArgsConstructor
 @ToString
 public class Genre extends AbstractModel {
     @Size(max = 30)

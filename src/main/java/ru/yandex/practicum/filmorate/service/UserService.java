@@ -4,13 +4,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
-import ru.yandex.practicum.filmorate.exception.ObjectNotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Positive;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @Validated
@@ -42,26 +42,24 @@ public class UserService extends AbstractModelService<User, UserStorage> {
         }, () -> user.setName(user.getLogin()));
     }
 
-    public Collection<User> getFriends(@Valid @Positive Long id) throws ObjectNotFoundException {
-        List<User> friends = new ArrayList<>();
-        for (Long friendId : storage.read(id).getFriends()) {
-            friends.add(storage.read(friendId));
-
-        }
-        return friends;
+    public List<User> getFriends(@Valid @Positive Long id) {
+        Set<Long> friendsIds = new HashSet<>(storage.read(id).getFriends());
+        return storage.read(friendsIds);
     }
 
-    public Collection<User> getCommonFriends(@Valid @Positive Long firstUserid
-            , @Valid @Positive Long secondUserId) throws ObjectNotFoundException {
-        List<User> commonFriends = new ArrayList<>();
-        Set<Long> secondUsersFriends = storage.read(secondUserId).getFriends();
+    public List<User> getCommonFriends(@Valid @Positive Long firstUserid
+            , @Valid @Positive Long secondUserId) {
         Set<Long> firstUsersFriends = storage.read(firstUserid).getFriends();
-        for (Long friendId : firstUsersFriends) {
-            if (secondUsersFriends.contains(friendId)) {
-                commonFriends.add(storage.read(friendId));
-            }
+        Set<Long> secondUsersFriends = storage.read(secondUserId).getFriends();
+        Set<Long> commonFriends = firstUsersFriends.stream()
+                .filter(two -> secondUsersFriends.stream()
+                        .anyMatch(one -> one.equals(two)))
+                .collect(Collectors.toSet());
+        if (commonFriends.size() != 0) {
+            return storage.read(commonFriends);
         }
-        return commonFriends;
+        return new ArrayList<>();
+
     }
 
     public void addFriend(Long id, Long friendId) {

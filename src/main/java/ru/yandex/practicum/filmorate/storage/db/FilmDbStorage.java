@@ -1,69 +1,74 @@
 package ru.yandex.practicum.filmorate.storage.db;
 
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Primary;
-import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.BatchPreparedStatementSetter;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.ObjectNotFoundException;
+import ru.yandex.practicum.filmorate.mapper.FilmMapper;
+import ru.yandex.practicum.filmorate.mapper.GenreMapper;
+import ru.yandex.practicum.filmorate.model.AbstractModel;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.model.Rating;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
-import java.sql.ResultSet;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Component
 @Primary
 @Slf4j
 public class FilmDbStorage implements FilmStorage {
-    private final JdbcTemplate jdbcTemplate;
+    private final NamedParameterJdbcTemplate jdbcTemplate;
+    private final FilmMapper filmMapper;
+    private final GenreMapper genreMapper;
 
     @Autowired
-    public FilmDbStorage(JdbcTemplate jdbcTemplate) {
+    public FilmDbStorage(NamedParameterJdbcTemplate jdbcTemplate,
+                         FilmMapper filmMapper,
+                         GenreMapper genreMapper) {
         this.jdbcTemplate = jdbcTemplate;
+        this.filmMapper = filmMapper;
+        this.genreMapper = genreMapper;
     }
 
     @Override
-    public Film read(Long id) throws ObjectNotFoundException {
+    public Film read(Long id) {
         String sql =
                 "SELECT f.FILM_ID, f.NAME, f.DESCRIPTION, f.RELEASE_DATE, f.DURATION, f.RATING_ID, r.NAME R_NAME " +
                         "FROM FILMS f JOIN RATINGS r ON f.RATING_ID = r.RATING_ID " +
-                        "WHERE f.FILM_ID = ?";
-        List<Film> result = jdbcTemplate.query(sql, this::mapToFilm, id);
+                        "WHERE f.FILM_ID = :id";
+        MapSqlParameterSource parameterSource = new MapSqlParameterSource("id", id);
+        List<Film> result = jdbcTemplate.query(sql, parameterSource, filmMapper);
         if (result.isEmpty()) {
             throw new ObjectNotFoundException("Film not found");
         }
         Film film = result.get(0);
         readLikes(film);
-        film.setGenres(readGenresByFilm(film));
+        readGenres(film);
         return result.get(0);
     }
 
-    private void checkFilm(Long id) throws ObjectNotFoundException {
+    @Override
+    public List<Film> read(Set<Long> id_set) {
         String sql =
                 "SELECT f.FILM_ID, f.NAME, f.DESCRIPTION, f.RELEASE_DATE, f.DURATION, f.RATING_ID, r.NAME R_NAME " +
-                        "FROM FILMS f JOIN RATINGS r ON f.RATING_ID = r.RATING_ID " +
-                        "WHERE f.FILM_ID = ?";
-        List<Film> result = jdbcTemplate.query(sql, this::mapToFilm, id);
-        if (result.isEmpty()) {
-            throw new ObjectNotFoundException("Film not found");
-        }
-    }
-
-    private Film mapToFilm(ResultSet resultSet, int rowNum) throws SQLException {
-        Film film = new Film();
-        film.setId(resultSet.getLong("FILM_ID"));
-        film.setName(resultSet.getString("NAME"));
-        film.setDescription(resultSet.getString("DESCRIPTION"));
-        film.setReleaseDate(resultSet.getDate("RELEASE_DATE").toLocalDate());
-        film.setDuration(resultSet.getInt("DURATION"));
-        film.setMpa(new Rating(resultSet.getLong("RATING_ID"), resultSet.getString("R_NAME")));
-        return film;
+                        "FROM FILMS f JOIN RATINGS r ON f.RATING_ID = r.RATING_ID WHERE f.FILM_ID IN (:ids) " +
+                        "ORDER BY f.FILM_ID";
+        SqlParameterSource parameterSource = new MapSqlParameterSource("ids", id_set);
+        List<Film> result = jdbcTemplate.query(sql, parameterSource, filmMapper);
+        readLikes(result);
+        readGenres(result);
+        return result;
     }
 
     @Override
@@ -71,16 +76,14 @@ public class FilmDbStorage implements FilmStorage {
         String sql =
                 "SELECT f.FILM_ID, f.NAME, f.DESCRIPTION, f.RELEASE_DATE, f.DURATION, f.RATING_ID, r.NAME R_NAME " +
                         "FROM FILMS f JOIN RATINGS r ON f.RATING_ID = r.RATING_ID ORDER BY f.FILM_ID";
-        List<Film> result = jdbcTemplate.query(sql, this::mapToFilm);
-        for (Film film : result) {
-            readLikes(film);
-            film.setGenres(readGenresByFilm(film));
-        }
+        List<Film> result = jdbcTemplate.query(sql, filmMapper);
+        readLikes(result);
+        readGenres(result);
         return result;
     }
 
     @Override
-    public List<Film> getPopular(Integer count) {
+    public List<Film> getPopular(Integer limit) {
         String sql =
                 "SELECT f.FILM_ID, f.NAME, f.DESCRIPTION, f.RELEASE_DATE, f.DURATION, f.RATING_ID, r.NAME R_NAME\n" +
                         "FROM FILMS f " +
@@ -92,18 +95,17 @@ public class FilmDbStorage implements FilmStorage {
                         "GROUP BY FILM_ID " +
                         ") l ON f.FILM_ID = l.FILM_ID " +
                         "ORDER BY l.cnt DESC " +
-                        "LIMIT ?";
-        List<Film> result = jdbcTemplate.query(sql, this::mapToFilm, count);
-        for (Film film : result) {
-            readLikes(film);
-            film.setGenres(readGenresByFilm(film));
-        }
+                        "LIMIT :lim";
+        SqlParameterSource parameterSource = new MapSqlParameterSource("lim", limit);
+        List<Film> result = jdbcTemplate.query(sql, parameterSource, filmMapper);
+        readLikes(result);
+        readGenres(result);
         return result;
     }
 
     @Override
     public Film create(Film film) {
-        SimpleJdbcInsert simpleJdbcInsert = new SimpleJdbcInsert(jdbcTemplate)
+        SimpleJdbcInsert simpleJdbcInsert = new SimpleJdbcInsert(jdbcTemplate.getJdbcTemplate())
                 .withTableName("FILMS")
                 .usingGeneratedKeyColumns("FILM_ID");
 
@@ -119,72 +121,142 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public Film update(Film film) throws ObjectNotFoundException {
+    public Film update(Film film) {
         checkFilm(film.getId());
+        MapSqlParameterSource parameterSource = new MapSqlParameterSource();
+        parameterSource.addValue("name", film.getName());
+        parameterSource.addValue("desc", film.getDescription());
+        parameterSource.addValue("date", film.getReleaseDate());
+        parameterSource.addValue("dur", film.getDuration());
+        parameterSource.addValue("rid", film.getMpa().getId());
+        parameterSource.addValue("fid", film.getId());
         String sql =
-                "UPDATE FILMS SET NAME = ?, DESCRIPTION = ?, RELEASE_DATE = ?, DURATION = ?, RATING_ID = ? " +
-                        "WHERE FILM_ID = ?";
-        jdbcTemplate.update(sql, film.getName(), film.getDescription(), film.getReleaseDate(), film.getDuration(),
-                film.getMpa().getId(), film.getId());
+                "UPDATE FILMS SET NAME = :name, DESCRIPTION = :desc, RELEASE_DATE = :date, DURATION = :dur, " +
+                    "RATING_ID = :rid WHERE FILM_ID = :fid";
+        jdbcTemplate.update(sql, parameterSource);
         updateGenresByFilm(film);
         return read(film.getId());
     }
 
     @Override
-    public void saveLikes(Film film) throws ObjectNotFoundException {
+    public void saveLikes(Film film) {
         checkFilm(film.getId());
-        jdbcTemplate.update("DELETE FROM FILMS_LIKES WHERE FILM_ID = ?", film.getId());
-
+        jdbcTemplate.getJdbcTemplate().update("DELETE FROM FILMS_LIKES WHERE FILM_ID = ?", film.getId());
         String sql = "INSERT INTO FILMS_LIKES (FILM_ID, USER_ID) VALUES(?, ?)";
-        Set<Long> likes = film.getLikes();
-        for (var like : likes) {
-            jdbcTemplate.update(sql, film.getId(), like);
-        }
+        List<Long> likes = new ArrayList<>(film.getLikes());
+        jdbcTemplate.getJdbcTemplate().batchUpdate(sql, new BatchPreparedStatementSetter() {
+            @Override
+            public void setValues(@NotNull PreparedStatement ps, int i) throws SQLException {
+                ps.setLong(1, film.getId());
+                ps.setLong(2, likes.get(i));
+            }
+            @Override
+            public int getBatchSize() {
+                return likes.size();
+            }
+        });
     }
 
+    private void checkFilm(Long id) {
+        String sql =
+                "SELECT f.FILM_ID, f.NAME, f.DESCRIPTION, f.RELEASE_DATE, f.DURATION, f.RATING_ID, r.NAME R_NAME " +
+                        "FROM FILMS f JOIN RATINGS r ON f.RATING_ID = r.RATING_ID " +
+                        "WHERE f.FILM_ID = ?";
+        List<Film> result = jdbcTemplate.getJdbcTemplate().query(sql, filmMapper, id);
+        if (result.isEmpty()) {
+            throw new ObjectNotFoundException("Film not found");
+        }
+    }
+    private void checkFilm(List <Film> films) {
+        Set<Long> ids = films.stream().map(AbstractModel::getId).collect(Collectors.toSet());
+        String sql =
+                "SELECT COUNT(*) AS COUNT FROM FILMS f WHERE f.FILM_ID IN (:ids)";
+        SqlParameterSource parameters = new MapSqlParameterSource("ids", ids);
+        SqlRowSet result = jdbcTemplate.queryForRowSet(sql, parameters);
+        if (result.next()) {
+            if (result.getInt("COUNT") != ids.size())
+                throw new  ObjectNotFoundException("check id's");
+            return;
+        }
+        throw new  ObjectNotFoundException("check id's");
+    }
     private void readLikes(Film film) {
         checkFilm(film.getId());
         String sql = "SELECT USER_ID FROM FILMS_LIKES WHERE FILM_ID = ? ORDER BY USER_ID ASC";
-        SqlRowSet sqlRowSet = jdbcTemplate.queryForRowSet(sql, film.getId());
+        SqlRowSet sqlRowSet = jdbcTemplate.getJdbcTemplate().queryForRowSet(sql, film.getId());
         while (sqlRowSet.next()) {
             film.getLikes().add(sqlRowSet.getLong("USER_ID"));
         }
     }
+    private void readLikes(List<Film> films) {
+        checkFilm(films);
+        Set<Long> ids = films.stream().map(AbstractModel::getId).collect(Collectors.toSet());
+        SqlParameterSource parameterSource = new MapSqlParameterSource("ids", ids);
+        String sql = "SELECT FILM_ID, USER_ID FROM FILMS_LIKES WHERE FILM_ID IN (:ids) ORDER BY USER_ID ASC";
+        SqlRowSet sqlRowSet = jdbcTemplate.queryForRowSet(sql, parameterSource);
+        while (sqlRowSet.next()) {
+            films.stream()
+                    .filter(film -> film.getId().equals(sqlRowSet.getLong("FILM_ID")))
+                    .findFirst()
+                    .get()
+                    .getLikes()
+                    .add(sqlRowSet.getLong("USER_ID"));
+        }
+    }
 
-    //@Override
-    public Set<Genre> readGenresByFilm(Film film) throws ObjectNotFoundException {
+    private void readGenres(Film film) {
         checkFilm(film.getId());
         String sql = "SELECT g.GENRE_ID, g.NAME FROM GENRES g NATURAL JOIN FILMS_GENRES fg WHERE fg.FILM_ID = ?"
                 + " ORDER BY GENRE_ID ASC";
-        return new HashSet<>(jdbcTemplate.query(sql, this::mapToGenre, film.getId()));
+        film.setGenres(new HashSet<>(jdbcTemplate.getJdbcTemplate().query(sql, genreMapper, film.getId())));
+    }
+    private void readGenres(List<Film> films) {
+        checkFilm(films);
+        Set<Long> ids = films.stream().map(AbstractModel::getId).collect(Collectors.toSet());
+        SqlParameterSource parameterSource = new MapSqlParameterSource("ids", ids);
+        String sql = "SELECT g.GENRE_ID, g.NAME, fg.FILM_ID FROM GENRES g NATURAL JOIN FILMS_GENRES fg WHERE fg.FILM_ID IN (:ids)"
+                + " ORDER BY GENRE_ID ASC";
+        SqlRowSet sqlRowSet = jdbcTemplate.queryForRowSet(sql, parameterSource);
+        while (sqlRowSet.next()) {
+            Genre genre = new Genre();
+            genre.setId(sqlRowSet.getLong("GENRE_ID"));
+            genre.setName(sqlRowSet.getString("NAME"));
+            films.stream()
+                    .filter(film -> film.getId().equals(sqlRowSet.getLong("FILM_ID")))
+                    .findFirst()
+                    .get()
+                    .getGenres()
+                    .add(genre);
+        }
     }
 
-    private Genre mapToGenre(ResultSet resultSet, int rowNum) throws SQLException {
-        Genre genre = new Genre();
-        genre.setId(resultSet.getLong("GENRE_ID"));
-        genre.setName(resultSet.getObject("NAME").toString());
-        return genre;
-    }
-
-    //@Override
-    private void createGenresByFilm(Film film) throws ObjectNotFoundException {
+    private void createGenresByFilm(Film film) {
         checkFilm(film.getId());
         String sql = "INSERT INTO FILMS_GENRES (FILM_ID, GENRE_ID) VALUES(?, ?)";
         Set<Genre> genres = film.getGenres();
         if (genres == null) {
             return;
         }
-        for (var genre : genres) {
-            jdbcTemplate.update(sql, film.getId(), genre.getId());
-        }
+        jdbcTemplate.getJdbcTemplate().batchUpdate(sql, new BatchPreparedStatementSetter() {
+            @Override
+            public void setValues(@NotNull PreparedStatement ps, int i) throws SQLException {
+                Genre genre = new ArrayList<>(film.getGenres()).get(i);
+                ps.setLong(1, film.getId());
+                ps.setLong(2, genre.getId());
+            }
+
+            @Override
+            public int getBatchSize() {
+                return film.getGenres().size();
+            }
+        });
+
     }
 
-
-    private void updateGenresByFilm(Film film) throws ObjectNotFoundException {
+    private void updateGenresByFilm(Film film) {
         String sql = "DELETE FROM FILMS_GENRES WHERE FILM_ID = ?";
-        jdbcTemplate.update(sql, film.getId());
+        jdbcTemplate.getJdbcTemplate().update(sql, film.getId());
         createGenresByFilm(film);
     }
-
 
 }

@@ -2,55 +2,64 @@ package ru.yandex.practicum.filmorate.storage.db;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Primary;
-import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.ObjectNotFoundException;
+import ru.yandex.practicum.filmorate.mapper.RatingMapper;
 import ru.yandex.practicum.filmorate.model.Rating;
 import ru.yandex.practicum.filmorate.storage.RatingStorage;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @Component
 @Primary
 public class RatingDbStorage implements RatingStorage {
-    private final JdbcTemplate jdbcTemplate;
+    private final NamedParameterJdbcTemplate jdbcTemplate;
+    private final RatingMapper ratingMapper;
 
     @Autowired
-    public RatingDbStorage(JdbcTemplate jdbcTemplate) {
+    public RatingDbStorage(NamedParameterJdbcTemplate jdbcTemplate,
+                           RatingMapper ratingMapper) {
         this.jdbcTemplate = jdbcTemplate;
+        this.ratingMapper = ratingMapper;
     }
 
     @Override
-    public Rating read(Long id) throws ObjectNotFoundException {
-        String sql = "SELECT * FROM RATINGS WHERE RATING_ID = ?";
-        List<Rating> result = jdbcTemplate.query(sql, this::mapToRating, id);
+    public Rating read(Long id) {
+        String sql = "SELECT * FROM RATINGS WHERE RATING_ID = :id";
+        SqlParameterSource parameterSource = new MapSqlParameterSource("id", id);
+        List<Rating> result = jdbcTemplate.query(sql,parameterSource, ratingMapper);
         if (result.isEmpty()) {
             throw new ObjectNotFoundException("Rating not found");
         }
         return result.get(0);
     }
-
-    private Rating mapToRating(ResultSet resultSet, int rowNum) throws SQLException {
-        Rating rating = new Rating();
-        rating.setId(resultSet.getLong("RATING_ID"));
-        rating.setName(resultSet.getString("NAME"));
-        return rating;
+    @Override
+    public List<Rating> read(Set<Long> id_set) {
+        SqlParameterSource parameters = new MapSqlParameterSource("ids", id_set);
+        String sql = "SELECT * FROM RATINGS WHERE RATING_ID IN (:ids) ORDER BY RATING_ID";
+        List<Rating> result = jdbcTemplate.query(sql, parameters, ratingMapper);
+        if (result.isEmpty()) {
+            throw new ObjectNotFoundException("Genre not found");
+        }
+        return result;
     }
 
     @Override
     public List<Rating> readAll() {
         String sql = "SELECT * FROM RATINGS ORDER BY RATING_ID";
-        return jdbcTemplate.query(sql, this::mapToRating);
+        return jdbcTemplate.query(sql, ratingMapper);
     }
 
     @Override
     public Rating create(Rating rating) {
-        SimpleJdbcInsert simpleJdbcInsert = new SimpleJdbcInsert(jdbcTemplate)
+        SimpleJdbcInsert simpleJdbcInsert = new SimpleJdbcInsert(jdbcTemplate.getJdbcTemplate())
                 .withTableName("RATINGS")
                 .usingGeneratedKeyColumns("RATING_ID");
 
@@ -63,8 +72,11 @@ public class RatingDbStorage implements RatingStorage {
 
     @Override
     public Rating update(Rating rating) {
-        String sql = "UPDATE RATINGS SET NAME = ? WHERE RATING_ID = ?";
-        jdbcTemplate.update(sql, rating.getName(), rating.getId());
+        String sql = "UPDATE RATINGS SET NAME = :name WHERE RATING_ID = rid";
+        MapSqlParameterSource parameterSource = new MapSqlParameterSource();
+        parameterSource.addValue("name", rating.getName());
+        parameterSource.addValue("id", rating.getId());
+        jdbcTemplate.update(sql,parameterSource);
         return rating;
     }
 }

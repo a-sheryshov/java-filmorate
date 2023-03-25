@@ -1,15 +1,13 @@
 package ru.yandex.practicum.filmorate.model;
 
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 
 import javax.validation.constraints.Size;
 
 @Getter
 @Setter
 @EqualsAndHashCode(callSuper = true)
+@AllArgsConstructor
 @ToString
 public class Rating extends AbstractModel {
     @Size(max = 10)

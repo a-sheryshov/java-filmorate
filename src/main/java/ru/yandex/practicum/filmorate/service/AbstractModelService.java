@@ -3,7 +3,6 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
-import ru.yandex.practicum.filmorate.exception.ObjectNotFoundException;
 import ru.yandex.practicum.filmorate.model.AbstractModel;
 import ru.yandex.practicum.filmorate.storage.ModelStorage;
 
@@ -23,13 +22,13 @@ public abstract class AbstractModelService<T extends AbstractModel, S extends Mo
         return result;
     }
 
-    public T update(@Valid final T data) throws ObjectNotFoundException {
+    public T update(@Valid final T data) {
         T result = storage.update(data);
         log.info("{} updated: {}", data.getClass().getSimpleName(), data.getId());
         return result;
     }
 
-    public T read(@Valid @Positive final Long id) throws ObjectNotFoundException {
+    public T read(@Valid @Positive final Long id) {
         return storage.read(id);
     }
 

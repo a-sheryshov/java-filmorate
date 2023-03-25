@@ -7,7 +7,7 @@ import ru.yandex.practicum.filmorate.exception.ObjectNotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
-import java.util.Collection;
+import java.util.List;
 
 
 @Service
@@ -21,12 +21,11 @@ public class FilmService extends AbstractModelService<Film, FilmStorage> {
         this.userService = userService;
     }
 
-    public Collection<Film> getPopular(Integer count) {
+    public List<Film> getPopular(Integer count) {
         return storage.getPopular(count);
     }
 
-    public void addLike(Long id, Long userId)
-            throws ObjectNotFoundException {
+    public void addLike(Long id, Long userId) {
         userService.read(userId);
         Film film = storage.read(id);
         film.getLikes().add(userId);
@@ -34,8 +33,7 @@ public class FilmService extends AbstractModelService<Film, FilmStorage> {
         log.info("Like from {} added to film {}", id, film);
     }
 
-    public void deleteLike(Long id, Long userId)
-            throws ObjectNotFoundException {
+    public void deleteLike(Long id, Long userId) {
         Film film = storage.read(id);
         if (!film.getLikes().remove(userId)) {
             throw new ObjectNotFoundException("No such like available");
