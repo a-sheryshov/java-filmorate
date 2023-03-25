@@ -72,7 +72,7 @@ public class RatingDbStorage implements RatingStorage {
 
     @Override
     public Rating update(Rating rating) {
-        String sql = "UPDATE RATINGS SET NAME = :name WHERE RATING_ID = rid";
+        String sql = "UPDATE RATINGS SET NAME = :name WHERE RATING_ID = :id";
         MapSqlParameterSource parameterSource = new MapSqlParameterSource();
         parameterSource.addValue("name", rating.getName());
         parameterSource.addValue("id", rating.getId());
