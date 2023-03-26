@@ -1,6 +1,6 @@
 package ru.yandex.practicum.filmorate.service;
 
-import lombok.RequiredArgsConstructor;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import ru.yandex.practicum.filmorate.model.AbstractModel;
@@ -12,7 +12,7 @@ import java.util.List;
 
 @Validated
 @Slf4j
-@RequiredArgsConstructor
+@AllArgsConstructor
 public abstract class AbstractModelService<T extends AbstractModel, S extends ModelStorage<T>> implements ModelService<T> {
     final S storage;
 

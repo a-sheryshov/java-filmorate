@@ -1,6 +1,6 @@
 package ru.yandex.practicum.filmorate.storage.db;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -19,16 +19,10 @@ import java.util.Set;
 
 @Component
 @Primary
+@AllArgsConstructor
 public class RatingDbStorage implements RatingStorage {
     private final NamedParameterJdbcTemplate jdbcTemplate;
     private final RatingMapper ratingMapper;
-
-    @Autowired
-    public RatingDbStorage(NamedParameterJdbcTemplate jdbcTemplate,
-                           RatingMapper ratingMapper) {
-        this.jdbcTemplate = jdbcTemplate;
-        this.ratingMapper = ratingMapper;
-    }
 
     @Override
     public Rating read(Long id) {
@@ -41,8 +35,8 @@ public class RatingDbStorage implements RatingStorage {
         return result.get(0);
     }
     @Override
-    public List<Rating> read(Set<Long> id_set) {
-        SqlParameterSource parameters = new MapSqlParameterSource("ids", id_set);
+    public List<Rating> read(Set<Long> idSet) {
+        SqlParameterSource parameters = new MapSqlParameterSource("ids", idSet);
         String sql = "SELECT * FROM RATINGS WHERE RATING_ID IN (:ids) ORDER BY RATING_ID";
         List<Rating> result = jdbcTemplate.query(sql, parameters, ratingMapper);
         if (result.isEmpty()) {

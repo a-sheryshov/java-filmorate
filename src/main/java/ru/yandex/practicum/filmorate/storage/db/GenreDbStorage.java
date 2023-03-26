@@ -1,6 +1,6 @@
 package ru.yandex.practicum.filmorate.storage.db;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -19,13 +19,10 @@ import java.util.Set;
 
 @Component
 @Primary
+@AllArgsConstructor
 public class GenreDbStorage implements GenreStorage {
     private final NamedParameterJdbcTemplate jdbcTemplate;
 
-    @Autowired
-    public GenreDbStorage(NamedParameterJdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
-    }
 
     @Override
     public Genre read(Long id) {
@@ -38,8 +35,8 @@ public class GenreDbStorage implements GenreStorage {
     }
 
     @Override
-    public List<Genre> read(Set<Long> id_set) {
-        SqlParameterSource parameters = new MapSqlParameterSource("ids", id_set);
+    public List<Genre> read(Set<Long> idSet) {
+        SqlParameterSource parameters = new MapSqlParameterSource("ids", idSet);
         String sql = "SELECT * FROM GENRES WHERE GENRE_ID IN (:ids) ORDER BY GENRE_ID";
         List<Genre> result = jdbcTemplate.getJdbcTemplate().query(sql, new GenreMapper(), parameters);
         if (result.isEmpty()) {

@@ -1,6 +1,6 @@
 package ru.yandex.practicum.filmorate.storage.db;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -21,15 +21,10 @@ import java.util.stream.Collectors;
 
 @Component
 @Primary
+@AllArgsConstructor
 public class UserDbStorage implements UserStorage {
     private final NamedParameterJdbcTemplate jdbcTemplate;
     private final UserMapper userMapper;
-
-    @Autowired
-    public UserDbStorage(NamedParameterJdbcTemplate jdbcTemplate, UserMapper userMapper) {
-        this.jdbcTemplate = jdbcTemplate;
-        this.userMapper = userMapper;
-    }
 
     @Override
     public User read(Long id) throws ObjectNotFoundException {
@@ -46,14 +41,14 @@ public class UserDbStorage implements UserStorage {
     }
 
     @Override
-    public List<User> read(Set<Long> id_set) {
-        if (id_set.size() == 0) {
+    public List<User> read(Set<Long> idSet) {
+        if (idSet.size() == 0) {
             return new ArrayList<>();
         }
         String sql = "SELECT * FROM USERS WHERE USER_ID IN (:ids) ORDER BY USER_ID";
-        MapSqlParameterSource parameterSource = new MapSqlParameterSource("ids", id_set);
+        MapSqlParameterSource parameterSource = new MapSqlParameterSource("ids", idSet);
         List<User> result = jdbcTemplate.query(sql, parameterSource, userMapper);
-        for (Long id : id_set) {
+        for (Long id : idSet) {
             if (result.stream().filter(f -> f.getId().equals(id)).findFirst().isEmpty())
                 throw new ObjectNotFoundException("User " + id + "not found");
         }
@@ -191,9 +186,8 @@ public class UserDbStorage implements UserStorage {
             users.stream()
                     .filter(user -> user.getId().equals(sqlRowSet.getLong("USER_ID")))
                     .findFirst()
-                    .get()
-                    .getFriends()
-                    .add(sqlRowSet.getLong("FRIEND_ID"));
+                    .ifPresentOrElse(user -> user.getFriends().add(sqlRowSet.getLong("FRIEND_ID")),
+                            ()-> {});
         }
     }
 
@@ -217,9 +211,8 @@ public class UserDbStorage implements UserStorage {
             users.stream()
                     .filter(user -> user.getId().equals(sqlRowSet.getLong("USER_ID")))
                     .findFirst()
-                    .get()
-                    .getLikes()
-                    .add(sqlRowSet.getLong("FILM_ID"));
+                    .ifPresentOrElse(user -> user.getLikes().add(sqlRowSet.getLong("FILM_ID")),
+                            ()->{});
         }
     }
 }

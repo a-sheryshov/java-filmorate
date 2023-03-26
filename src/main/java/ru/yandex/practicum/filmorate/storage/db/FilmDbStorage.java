@@ -1,8 +1,8 @@
 package ru.yandex.practicum.filmorate.storage.db;
 
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -27,19 +27,11 @@ import java.util.stream.Collectors;
 @Component
 @Primary
 @Slf4j
+@AllArgsConstructor
 public class FilmDbStorage implements FilmStorage {
     private final NamedParameterJdbcTemplate jdbcTemplate;
     private final FilmMapper filmMapper;
     private final GenreMapper genreMapper;
-
-    @Autowired
-    public FilmDbStorage(NamedParameterJdbcTemplate jdbcTemplate,
-                         FilmMapper filmMapper,
-                         GenreMapper genreMapper) {
-        this.jdbcTemplate = jdbcTemplate;
-        this.filmMapper = filmMapper;
-        this.genreMapper = genreMapper;
-    }
 
     @Override
     public Film read(Long id) {
@@ -59,12 +51,12 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public List<Film> read(Set<Long> id_set) {
+    public List<Film> read(Set<Long> idSet) {
         String sql =
                 "SELECT f.FILM_ID, f.NAME, f.DESCRIPTION, f.RELEASE_DATE, f.DURATION, f.RATING_ID, r.NAME R_NAME " +
                         "FROM FILMS f JOIN RATINGS r ON f.RATING_ID = r.RATING_ID WHERE f.FILM_ID IN (:ids) " +
                         "ORDER BY f.FILM_ID";
-        SqlParameterSource parameterSource = new MapSqlParameterSource("ids", id_set);
+        SqlParameterSource parameterSource = new MapSqlParameterSource("ids", idSet);
         List<Film> result = jdbcTemplate.query(sql, parameterSource, filmMapper);
         readLikes(result);
         readGenres(result);
@@ -198,9 +190,8 @@ public class FilmDbStorage implements FilmStorage {
             films.stream()
                     .filter(film -> film.getId().equals(sqlRowSet.getLong("FILM_ID")))
                     .findFirst()
-                    .get()
-                    .getLikes()
-                    .add(sqlRowSet.getLong("USER_ID"));
+                    .ifPresentOrElse(film -> film.getLikes().add(sqlRowSet.getLong("USER_ID")),
+                            ()->{});
         }
     }
 
@@ -224,9 +215,7 @@ public class FilmDbStorage implements FilmStorage {
             films.stream()
                     .filter(film -> film.getId().equals(sqlRowSet.getLong("FILM_ID")))
                     .findFirst()
-                    .get()
-                    .getGenres()
-                    .add(genre);
+                    .ifPresentOrElse(film -> film.getGenres().add(genre), ()->{});
         }
     }
 
