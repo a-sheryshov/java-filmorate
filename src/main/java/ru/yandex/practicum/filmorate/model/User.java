@@ -12,11 +12,11 @@ import java.util.Set;
 
 
 @Getter
+@Setter
 @RequiredArgsConstructor
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
 public class User extends AbstractModel {
-    @Setter
     private String name;
     @NotBlank(message = "Email is mandatory")
     @Email(message = "Wrong email format")

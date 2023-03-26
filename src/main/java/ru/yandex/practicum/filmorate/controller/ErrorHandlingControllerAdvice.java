@@ -8,9 +8,11 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import ru.yandex.practicum.filmorate.entity.AppError;
+import ru.yandex.practicum.filmorate.entity.ErrorResponse;
 import ru.yandex.practicum.filmorate.entity.ValidationErrorResponse;
 import ru.yandex.practicum.filmorate.entity.Violation;
 import ru.yandex.practicum.filmorate.exception.ObjectNotFoundException;
+import ru.yandex.practicum.filmorate.exception.UserAlreadyExistsException;
 
 import javax.validation.ConstraintViolationException;
 import javax.validation.Path;
@@ -62,6 +64,16 @@ public class ErrorHandlingControllerAdvice {
         return new ValidationErrorResponse(violations);
     }
 
+    @ExceptionHandler(UserAlreadyExistsException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ResponseBody
+    public AppError onUserAlreadyExistsException(
+            UserAlreadyExistsException e
+    ) {
+        log.error(e.getMessage());
+        return new AppError(HttpStatus.BAD_REQUEST.value(), e.getMessage());
+    }
+
     @ExceptionHandler(ObjectNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     @ResponseBody
@@ -70,6 +82,13 @@ public class ErrorHandlingControllerAdvice {
     ) {
         log.error(e.getMessage());
         return new AppError(HttpStatus.NOT_FOUND.value(), e.getMessage());
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ErrorResponse handleThrowable(Throwable e) {
+        e.printStackTrace();
+        return new ErrorResponse("Произошла непредвиденная ошибка.");
     }
 
 }

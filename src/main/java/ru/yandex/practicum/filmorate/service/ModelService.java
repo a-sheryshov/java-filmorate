@@ -17,5 +17,4 @@ public interface ModelService<E extends AbstractModel> {
 
     E update(@Valid final E data);
 
-    void delete(@Valid @Positive final Long id);
 }

@@ -1,16 +1,16 @@
 package ru.yandex.practicum.filmorate.model;
 
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import lombok.ToString;
+import lombok.*;
 
 import javax.validation.constraints.*;
 import java.time.LocalDate;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.TreeSet;
 
 @Getter
+@Setter
 @RequiredArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 @ToString
@@ -29,9 +29,12 @@ public class Film extends AbstractModel {
     private LocalDate releaseDate;
     @Positive(message = "Should be greater than 0")
     private int duration;
-
+    @NotNull
+    private Rating mpa = new Rating();
+    @NotNull
+    private Set<Genre> genres = new TreeSet<>(Comparator.comparing(g -> g.id));
+    @NotNull
     private final Set<Long> likes = new HashSet<>();
-
 
     @AssertTrue(message = "Should be after " + CINEMA_CREATION_DATE_STR)
     private boolean isValidReleaseDate() {
