@@ -5,7 +5,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.ComponentScan;
 
 @SpringBootApplication
-@ComponentScan({"ru.yandex.practicum.filmorate"})
+//@ComponentScan({"ru.yandex.practicum.filmorate"})
 public class FilmorateApplication {
     public static void main(String[] args) {
         SpringApplication.run(FilmorateApplication.class, args);
