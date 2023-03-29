@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.storage.db;
 
 import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Primary;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
@@ -24,6 +25,8 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public class UserDbStorage implements UserStorage {
     private final NamedParameterJdbcTemplate jdbcTemplate;
+    private final JdbcTemplate jdbc;
+
     private final UserMapper userMapper;
 
     @Override
@@ -214,5 +217,13 @@ public class UserDbStorage implements UserStorage {
                     .ifPresentOrElse(user -> user.getLikes().add(sqlRowSet.getLong("FILM_ID")),
                             ()->{});
         }
+    }
+
+    @Override
+    public void delete(Long userId) {
+        checkUser(userId);
+        String sql = "DELETE FROM USERS WHERE user_id = ?";
+        jdbc.update(sql, userId);
+       // jdbcTemplate.getJdbcTemplate().update(sql, userId);
     }
 }

@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
@@ -30,6 +31,7 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public class FilmDbStorage implements FilmStorage {
     private final NamedParameterJdbcTemplate jdbcTemplate;
+    private final JdbcTemplate jdbc;
     private final FilmMapper filmMapper;
     private final GenreMapper genreMapper;
 
@@ -73,6 +75,8 @@ public class FilmDbStorage implements FilmStorage {
         readGenres(result);
         return result;
     }
+
+
 
     @Override
     public List<Film> getPopular(Integer limit) {
@@ -124,7 +128,7 @@ public class FilmDbStorage implements FilmStorage {
         parameterSource.addValue("fid", film.getId());
         String sql =
                 "UPDATE FILMS SET NAME = :name, DESCRIPTION = :desc, RELEASE_DATE = :date, DURATION = :dur, " +
-                    "RATING_ID = :rid WHERE FILM_ID = :fid";
+                        "RATING_ID = :rid WHERE FILM_ID = :fid";
         jdbcTemplate.update(sql, parameterSource);
         updateGenresByFilm(film);
         return read(film.getId());
@@ -142,6 +146,7 @@ public class FilmDbStorage implements FilmStorage {
                 ps.setLong(1, film.getId());
                 ps.setLong(2, likes.get(i));
             }
+
             @Override
             public int getBatchSize() {
                 return likes.size();
@@ -159,7 +164,8 @@ public class FilmDbStorage implements FilmStorage {
             throw new ObjectNotFoundException("Film not found");
         }
     }
-    private void checkFilm(List <Film> films) {
+
+    private void checkFilm(List<Film> films) {
         Set<Long> ids = films.stream().map(AbstractModel::getId).collect(Collectors.toSet());
         String sql =
                 "SELECT COUNT(*) AS COUNT FROM FILMS f WHERE f.FILM_ID IN (:ids)";
@@ -167,11 +173,12 @@ public class FilmDbStorage implements FilmStorage {
         SqlRowSet result = jdbcTemplate.queryForRowSet(sql, parameters);
         if (result.next()) {
             if (result.getInt("COUNT") != ids.size())
-                throw new  ObjectNotFoundException("check id's");
+                throw new ObjectNotFoundException("check id's");
             return;
         }
-        throw new  ObjectNotFoundException("check id's");
+        throw new ObjectNotFoundException("check id's");
     }
+
     private void readLikes(Film film) {
         checkFilm(film.getId());
         String sql = "SELECT USER_ID FROM FILMS_LIKES WHERE FILM_ID = ? ORDER BY USER_ID ASC";
@@ -180,6 +187,7 @@ public class FilmDbStorage implements FilmStorage {
             film.getLikes().add(sqlRowSet.getLong("USER_ID"));
         }
     }
+
     private void readLikes(List<Film> films) {
         checkFilm(films);
         Set<Long> ids = films.stream().map(AbstractModel::getId).collect(Collectors.toSet());
@@ -191,7 +199,8 @@ public class FilmDbStorage implements FilmStorage {
                     .filter(film -> film.getId().equals(sqlRowSet.getLong("FILM_ID")))
                     .findFirst()
                     .ifPresentOrElse(film -> film.getLikes().add(sqlRowSet.getLong("USER_ID")),
-                            ()->{});
+                            () -> {
+                            });
         }
     }
 
@@ -201,6 +210,7 @@ public class FilmDbStorage implements FilmStorage {
                 + " ORDER BY GENRE_ID ASC";
         film.setGenres(new HashSet<>(jdbcTemplate.getJdbcTemplate().query(sql, genreMapper, film.getId())));
     }
+
     private void readGenres(List<Film> films) {
         checkFilm(films);
         Set<Long> ids = films.stream().map(AbstractModel::getId).collect(Collectors.toSet());
@@ -215,7 +225,8 @@ public class FilmDbStorage implements FilmStorage {
             films.stream()
                     .filter(film -> film.getId().equals(sqlRowSet.getLong("FILM_ID")))
                     .findFirst()
-                    .ifPresentOrElse(film -> film.getGenres().add(genre), ()->{});
+                    .ifPresentOrElse(film -> film.getGenres().add(genre), () -> {
+                    });
         }
     }
 
@@ -248,4 +259,11 @@ public class FilmDbStorage implements FilmStorage {
         createGenresByFilm(film);
     }
 
+    @Override
+    public void delete(Long filmId) {
+        checkFilm(filmId);
+        String sql = "DELETE FROM FILMS WHERE film_id = ?";
+        // jdbcTemplate.getJdbcTemplate().update(sql, filmId);
+        jdbc.update(sql, filmId);
+    }
 }

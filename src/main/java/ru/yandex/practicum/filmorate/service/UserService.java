@@ -101,4 +101,8 @@ public class UserService extends AbstractModelService<User, UserStorage> {
         }
         log.info("Friendship between {} and {} removed", friendId, user);
     }
+    public void delete(Long userId) {
+        storage.delete(userId);
+        log.info("User with id " + userId + " is deleted");
+    }
 }

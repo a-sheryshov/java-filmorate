@@ -30,7 +30,7 @@ CREATE TABLE IF NOT EXISTS films (
     release_date date   NOT NULL,
     duration integer   NOT NULL,
     rating_id bigint   NOT NULL,
-	CONSTRAINT fk_film_rating_id FOREIGN KEY(rating_id) REFERENCES ratings (rating_id)
+	CONSTRAINT fk_film_rating_id FOREIGN KEY(rating_id) REFERENCES ratings (rating_id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS users (
