@@ -25,13 +25,13 @@ private RecommendationDbStorage recommendationDbStorage;
     }
     public List<Film> getRecommendations(Long userId) {
         List<Film> recommendationFilms = new ArrayList<>();
-        User user = userDbStorage.read(userId);
+      //  User user = userDbStorage.read(userId);
         User userToRecommendation = getUserWithMostTotalLikes(userId);
-        if (userToRecommendation.getId() == null) {
+        if (userToRecommendation.getName() == null) {
             log.info("Для пользователя с id {} нет рекомендованных фильмов", userId);
             return recommendationFilms;
         }
-
+        recommendationFilms = recommendationDbStorage.getLikedFilms(userId, userToRecommendation.getId());
         return recommendationFilms;
     }
 
