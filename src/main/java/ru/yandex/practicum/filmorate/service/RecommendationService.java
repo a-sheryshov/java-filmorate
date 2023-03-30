@@ -41,7 +41,7 @@ public class RecommendationService {
 
     private User getUserWithMostTotalLikes(Long userId) {
         List<User> allUsers = userDbStorage.readAll();
-        if(allUsers.size() == 0) {
+        if (allUsers.size() == 0) {
             throw new ObjectNotFoundException("Users not found");
         }
         Integer maxCount = 0;
