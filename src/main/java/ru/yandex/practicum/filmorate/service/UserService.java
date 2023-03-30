@@ -47,8 +47,7 @@ public class UserService extends AbstractModelService<User, UserStorage> {
         return storage.read(friendsIds);
     }
 
-    public List<User> getCommonFriends(@Valid @Positive Long firstUserid
-            , @Valid @Positive Long secondUserId) {
+    public List<User> getCommonFriends(@Valid @Positive Long firstUserid, @Valid @Positive Long secondUserId) {
         Set<Long> firstUsersFriends = storage.read(firstUserid).getFriends();
         Set<Long> secondUsersFriends = storage.read(secondUserId).getFriends();
         Set<Long> commonFriends = firstUsersFriends.stream()
