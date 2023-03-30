@@ -17,6 +17,7 @@ public class RecommendationDbStorage implements RecommendationStorage {
     private NamedParameterJdbcTemplate jdbcTemplate;
     private FilmDbStorage filmDbStorage;
 
+    @Override
     public Integer getCountLikes(Long userId, Long userForCompareId) {
 
         String sql = "SELECT COUNT(*)" +
@@ -33,6 +34,7 @@ public class RecommendationDbStorage implements RecommendationStorage {
         return count;
     }
 
+    @Override
     public List<Film> getLikedFilms(Long userId, Long userToRecommendationId) {
 
         String sql = "SELECT FILM_ID" +
