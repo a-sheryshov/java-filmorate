@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.RecommendationStorage;
 import ru.yandex.practicum.filmorate.storage.db.RecommendationDbStorage;
 import ru.yandex.practicum.filmorate.storage.db.UserDbStorage;
 
@@ -17,12 +18,12 @@ import java.util.List;
 @RequiredArgsConstructor
 public class RecommendationService {
     private UserDbStorage userDbStorage;
-    private RecommendationDbStorage recommendationDbStorage;
+    private RecommendationStorage recommendationStorage;
 
     @Autowired
     public RecommendationService(UserDbStorage userDbStorage, RecommendationDbStorage recommendationDbStorage) {
         this.userDbStorage = userDbStorage;
-        this.recommendationDbStorage = recommendationDbStorage;
+        this.recommendationStorage = recommendationDbStorage;
     }
 
     public List<Film> getRecommendations(Long userId) {
@@ -32,7 +33,7 @@ public class RecommendationService {
             log.info("Для пользователя с id {} нет рекомендованных фильмов", userId);
             return recommendationFilms;
         }
-        recommendationFilms = recommendationDbStorage.getLikedFilms(userId, userToRecommendation.getId());
+        recommendationFilms = recommendationStorage.getLikedFilms(userId, userToRecommendation.getId());
         return recommendationFilms;
     }
 
@@ -42,7 +43,7 @@ public class RecommendationService {
         User userToRecommendation = new User();
 
         for (User user : allUsers) {
-            Integer count = recommendationDbStorage.getCountLikes(userId, user.getId());
+            Integer count = recommendationStorage.getCountLikes(userId, user.getId());
             if (count > maxCount) {
                 maxCount = count;
                 userToRecommendation = user;

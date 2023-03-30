@@ -6,12 +6,14 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.storage.RecommendationStorage;
+
 import java.util.*;
 
 @Component
 @Slf4j
 @AllArgsConstructor
-public class RecommendationDbStorage {
+public class RecommendationDbStorage implements RecommendationStorage {
     private NamedParameterJdbcTemplate jdbcTemplate;
     private FilmDbStorage filmDbStorage;
 

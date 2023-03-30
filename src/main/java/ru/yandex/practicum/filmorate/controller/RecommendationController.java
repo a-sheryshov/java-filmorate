@@ -13,7 +13,6 @@ import java.util.List;
 @RequestMapping("/users")
 class RecommendationController {
     private final RecommendationService recommendationService;
-
     RecommendationController(RecommendationService recommendationService) {
         this.recommendationService = recommendationService;
     }
