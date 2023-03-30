@@ -44,7 +44,7 @@ public class FilmService extends AbstractModelService<Film, FilmStorage> {
 
     public void delete(Long filmId) {
         storage.delete(filmId);
-        log.info("Film with id " + filmId + " is deleted");
+        log.info("Film with id {} is deleted" , filmId);
     }
 
 }

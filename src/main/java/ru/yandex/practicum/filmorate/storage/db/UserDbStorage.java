@@ -25,7 +25,6 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public class UserDbStorage implements UserStorage {
     private final NamedParameterJdbcTemplate jdbcTemplate;
-    private final JdbcTemplate jdbc;
 
     private final UserMapper userMapper;
 
@@ -137,12 +136,13 @@ public class UserDbStorage implements UserStorage {
         return filmRows.next();
     }
 
-    private void checkUser(Long id) {
+    private List<User> checkUser(Long id) {
         String sql = "SELECT * FROM USERS WHERE USER_ID = ?";
         List<User> result = jdbcTemplate.getJdbcTemplate().query(sql, userMapper, id);
         if (result.isEmpty()) {
             throw new ObjectNotFoundException("User not found");
         }
+        return result;
     }
 
     private void checkUser(List <User> users) {
@@ -221,9 +221,19 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public void delete(Long userId) {
-        checkUser(userId);
-        String sql = "DELETE FROM USERS WHERE user_id = ?";
-        jdbc.update(sql, userId);
-       // jdbcTemplate.getJdbcTemplate().update(sql, userId);
+        User user = checkUser(userId).get(0);
+        user.getFriends().forEach(idFriend -> removeFriendship(userId, idFriend));
+        user.getLikes()
+                .forEach(idLike -> {
+                    String sql = String.format("DELETE FROM films_likes WHERE film_id = %s AND user_id = %s",
+
+                            idLike, userId
+                    );
+                    jdbcTemplate.getJdbcTemplate().update(sql);
+                });
+
+        jdbcTemplate.getJdbcTemplate().update(
+                String.format("DELETE FROM users WHERE user_id = %s", userId)
+        );
     }
 }

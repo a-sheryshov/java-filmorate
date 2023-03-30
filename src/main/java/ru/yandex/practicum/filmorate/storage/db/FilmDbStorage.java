@@ -5,7 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
@@ -31,7 +30,6 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public class FilmDbStorage implements FilmStorage {
     private final NamedParameterJdbcTemplate jdbcTemplate;
-    private final JdbcTemplate jdbc;
     private final FilmMapper filmMapper;
     private final GenreMapper genreMapper;
 
@@ -111,6 +109,7 @@ public class FilmDbStorage implements FilmStorage {
         values.put("RELEASE_DATE", film.getReleaseDate());
         values.put("DURATION", film.getDuration());
         values.put("RATING_ID", film.getMpa().getId());
+        values.put("GENRE_ID", film.getGenres());
         film.setId(simpleJdbcInsert.executeAndReturnKey(values).longValue());
         createGenresByFilm(film);
         return film;
@@ -126,6 +125,7 @@ public class FilmDbStorage implements FilmStorage {
         parameterSource.addValue("dur", film.getDuration());
         parameterSource.addValue("rid", film.getMpa().getId());
         parameterSource.addValue("fid", film.getId());
+
         String sql =
                 "UPDATE FILMS SET NAME = :name, DESCRIPTION = :desc, RELEASE_DATE = :date, DURATION = :dur, " +
                         "RATING_ID = :rid WHERE FILM_ID = :fid";
@@ -154,7 +154,7 @@ public class FilmDbStorage implements FilmStorage {
         });
     }
 
-    private void checkFilm(Long id) {
+    private List<Film> checkFilm(Long id) {
         String sql =
                 "SELECT f.FILM_ID, f.NAME, f.DESCRIPTION, f.RELEASE_DATE, f.DURATION, f.RATING_ID, r.NAME R_NAME " +
                         "FROM FILMS f JOIN RATINGS r ON f.RATING_ID = r.RATING_ID " +
@@ -163,6 +163,7 @@ public class FilmDbStorage implements FilmStorage {
         if (result.isEmpty()) {
             throw new ObjectNotFoundException("Film not found");
         }
+        return result;
     }
 
     private void checkFilm(List<Film> films) {
@@ -259,11 +260,31 @@ public class FilmDbStorage implements FilmStorage {
         createGenresByFilm(film);
     }
 
+    private void removeFilmLikes(Long filmId, Long userId) {
+        jdbcTemplate.getJdbcTemplate().update("DELETE FROM films_likes WHERE film_id = ? AND user_id = ?",
+                filmId, userId
+        );
+    }
     @Override
     public void delete(Long filmId) {
-        checkFilm(filmId);
-        String sql = "DELETE FROM FILMS WHERE film_id = ?";
-        // jdbcTemplate.getJdbcTemplate().update(sql, filmId);
-        jdbc.update(sql, filmId);
+//        checkFilm(filmId);
+//        String sql = "DELETE FROM FILMS WHERE FILM_ID = ?";
+//        jdbcTemplate.getJdbcTemplate().update(sql, filmId);
+        Film film = checkFilm(filmId).get(0);
+        film.getLikes().forEach(userId -> removeFilmLikes(filmId, userId));
+        film.getLikes()
+
+                .forEach(idLike -> {
+                    String sql = String.format("DELETE FROM films_likes WHERE film_id = %s AND user_id = %s",
+
+                            idLike, filmId
+                    );
+                    jdbcTemplate.getJdbcTemplate().update(sql);
+                });
+
+        jdbcTemplate.getJdbcTemplate().update(
+                String.format("DELETE FROM films WHERE film_id = %s", filmId)
+        );
     }
+
 }
