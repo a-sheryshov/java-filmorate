@@ -108,10 +108,9 @@ public class FilmDbStorage implements FilmStorage {
         values.put("RELEASE_DATE", film.getReleaseDate());
         values.put("DURATION", film.getDuration());
         values.put("RATING_ID", film.getMpa().getId());
-        values.put("GENRE_ID", film.getGenres());
+        //values.put("GENRE_ID", film.getGenres());
         film.setId(simpleJdbcInsert.executeAndReturnKey(values).longValue());
         createGenresByFilm(film);
-        readGenres(film);
         return film;
     }
 
@@ -131,6 +130,7 @@ public class FilmDbStorage implements FilmStorage {
                         "RATING_ID = :rid WHERE FILM_ID = :fid";
         jdbcTemplate.update(sql, parameterSource);
         updateGenresByFilm(film);
+        readGenres(film);
         return read(film.getId());
     }
 
@@ -233,7 +233,7 @@ public class FilmDbStorage implements FilmStorage {
 
     private void createGenresByFilm(Film film) {
         checkFilm(film.getId());
-        String sql = "INSERT INTO FILMS_GENRES (FILM_ID, GENRE_ID) VALUES(?, ?), ORDER BY genre_id ASC";
+        String sql = "INSERT INTO FILMS_GENRES (FILM_ID, GENRE_ID) VALUES(?, ?)";
         Set<Genre> genres = film.getGenres();
         if (genres == null) {
             return;
