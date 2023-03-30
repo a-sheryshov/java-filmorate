@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.exception.ObjectNotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.RecommendationStorage;
@@ -27,6 +28,7 @@ public class RecommendationService {
     }
 
     public List<Film> getRecommendations(Long userId) {
+        userDbStorage.checkUser(userId);
         List<Film> recommendationFilms = new ArrayList<>();
         User userToRecommendation = getUserWithMostTotalLikes(userId);
         if (userToRecommendation.getName() == null) {
@@ -39,6 +41,9 @@ public class RecommendationService {
 
     private User getUserWithMostTotalLikes(Long userId) {
         List<User> allUsers = userDbStorage.readAll();
+        if(allUsers.size() == 0) {
+            throw new ObjectNotFoundException("Users not found");
+        }
         Integer maxCount = 0;
         User userToRecommendation = new User();
 
