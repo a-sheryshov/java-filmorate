@@ -112,6 +112,7 @@ public class FilmDbStorage implements FilmStorage {
         values.put("GENRE_ID", film.getGenres());
         film.setId(simpleJdbcInsert.executeAndReturnKey(values).longValue());
         createGenresByFilm(film);
+        readGenres(film);
         return film;
     }
 
