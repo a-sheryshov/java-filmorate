@@ -6,5 +6,6 @@ import java.util.List;
 
 public interface RecommendationStorage {
     Integer getCountLikes(Long userId, Long userForCompareId);
+
     List<Film> getLikedFilms(Long userId, Long userToRecommendationId);
 }

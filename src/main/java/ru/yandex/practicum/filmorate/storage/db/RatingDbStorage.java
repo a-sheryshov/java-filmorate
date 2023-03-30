@@ -28,12 +28,13 @@ public class RatingDbStorage implements RatingStorage {
     public Rating read(Long id) {
         String sql = "SELECT * FROM RATINGS WHERE RATING_ID = :id";
         SqlParameterSource parameterSource = new MapSqlParameterSource("id", id);
-        List<Rating> result = jdbcTemplate.query(sql,parameterSource, ratingMapper);
+        List<Rating> result = jdbcTemplate.query(sql, parameterSource, ratingMapper);
         if (result.isEmpty()) {
             throw new ObjectNotFoundException("Rating not found");
         }
         return result.get(0);
     }
+
     @Override
     public List<Rating> read(Set<Long> idSet) {
         SqlParameterSource parameters = new MapSqlParameterSource("ids", idSet);
@@ -70,7 +71,7 @@ public class RatingDbStorage implements RatingStorage {
         MapSqlParameterSource parameterSource = new MapSqlParameterSource();
         parameterSource.addValue("name", rating.getName());
         parameterSource.addValue("id", rating.getId());
-        jdbcTemplate.update(sql,parameterSource);
+        jdbcTemplate.update(sql, parameterSource);
         return rating;
     }
 }
