@@ -5,18 +5,16 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.RecommendationService;
-import ru.yandex.practicum.filmorate.storage.db.RecommendationDbStorage;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/users")
 class RecommendationController {
-   private RecommendationService recommendationService;
+    private final RecommendationService recommendationService;
 
-    RecommendationController (RecommendationService recommendationService) {
+    RecommendationController(RecommendationService recommendationService) {
         this.recommendationService = recommendationService;
     }
 
@@ -24,5 +22,4 @@ class RecommendationController {
     public List<Film> getRecommendation(@PathVariable Long userId) {
         return recommendationService.getRecommendations(userId);
     }
-
 }

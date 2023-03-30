@@ -16,16 +16,17 @@ import java.util.List;
 @Slf4j
 @RequiredArgsConstructor
 public class RecommendationService {
-private UserDbStorage userDbStorage;
-private RecommendationDbStorage recommendationDbStorage;
+    private UserDbStorage userDbStorage;
+    private RecommendationDbStorage recommendationDbStorage;
+
     @Autowired
     public RecommendationService(UserDbStorage userDbStorage, RecommendationDbStorage recommendationDbStorage) {
         this.userDbStorage = userDbStorage;
         this.recommendationDbStorage = recommendationDbStorage;
     }
+
     public List<Film> getRecommendations(Long userId) {
         List<Film> recommendationFilms = new ArrayList<>();
-      //  User user = userDbStorage.read(userId);
         User userToRecommendation = getUserWithMostTotalLikes(userId);
         if (userToRecommendation.getName() == null) {
             log.info("Для пользователя с id {} нет рекомендованных фильмов", userId);
@@ -38,17 +39,15 @@ private RecommendationDbStorage recommendationDbStorage;
     private User getUserWithMostTotalLikes(Long userId) {
         List<User> allUsers = userDbStorage.readAll();
         Integer maxCount = 0;
-        User userToRecomendation = new User();
+        User userToRecommendation = new User();
 
-        for(User user : allUsers) {
-
+        for (User user : allUsers) {
             Integer count = recommendationDbStorage.getCountLikes(userId, user.getId());
             if (count > maxCount) {
                 maxCount = count;
-                userToRecomendation = user;
+                userToRecommendation = user;
             }
         }
-      return userToRecomendation;
+        return userToRecommendation;
     }
-
 }
