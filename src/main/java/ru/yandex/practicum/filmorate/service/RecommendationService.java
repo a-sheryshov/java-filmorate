@@ -9,36 +9,46 @@ import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.db.RecommendationDbStorage;
 import ru.yandex.practicum.filmorate.storage.db.UserDbStorage;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
 @Slf4j
 @RequiredArgsConstructor
 public class RecommendationService {
-//    UserService userService;
-//    public RecommendationService(UserService userService) {
-//        this.userService = userService;
-//    }
-@Autowired
-    private UserDbStorage userDbStorage;
-@Autowired
-    private RecommendationDbStorage recommendationDbStorage;
+private UserDbStorage userDbStorage;
+private RecommendationDbStorage recommendationDbStorage;
+    @Autowired
     public RecommendationService(UserDbStorage userDbStorage, RecommendationDbStorage recommendationDbStorage) {
         this.userDbStorage = userDbStorage;
         this.recommendationDbStorage = recommendationDbStorage;
     }
-
-
-
-
     public List<Film> getRecommendations(Long userId) {
-      //  List<User> allUsers = userDbStorage.readAll();
-        Integer count = recommendationDbStorage.getCountLikes(1L, 2L);
-        return null;
+        List<Film> recommendationFilms = new ArrayList<>();
+        User user = userDbStorage.read(userId);
+        User userToRecommendation = getUserWithMostTotalLikes(userId);
+        if (userToRecommendation.getId() == null) {
+            log.info("Для пользователя с id {} нет рекомендованных фильмов", userId);
+            return recommendationFilms;
+        }
+
+        return recommendationFilms;
     }
 
-    private Integer getCountLikes(Long userId, Long userForCompareId) {
-      return recommendationDbStorage.getCountLikes(userId, userForCompareId);
+    private User getUserWithMostTotalLikes(Long userId) {
+        List<User> allUsers = userDbStorage.readAll();
+        Integer maxCount = 0;
+        User userToRecomendation = new User();
+
+        for(User user : allUsers) {
+
+            Integer count = recommendationDbStorage.getCountLikes(userId, user.getId());
+            if (count > maxCount) {
+                maxCount = count;
+                userToRecomendation = user;
+            }
+        }
+      return userToRecomendation;
     }
 
 }
