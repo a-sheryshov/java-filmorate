@@ -23,6 +23,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Component
 @Primary
@@ -73,7 +74,6 @@ public class FilmDbStorage implements FilmStorage {
         readGenres(result);
         return result;
     }
-
 
 
     @Override
@@ -234,7 +234,7 @@ public class FilmDbStorage implements FilmStorage {
 
     private void createGenresByFilm(Film film) {
         checkFilm(film.getId());
-        String sql = "INSERT INTO FILMS_GENRES (FILM_ID, GENRE_ID) VALUES(?, ?)";
+        String sql = "INSERT INTO FILMS_GENRES (FILM_ID, GENRE_ID) VALUES(?, ?), ORDER BY genre_id ASC";
         Set<Genre> genres = film.getGenres();
         if (genres == null) {
             return;
@@ -266,11 +266,9 @@ public class FilmDbStorage implements FilmStorage {
                 filmId, userId
         );
     }
+
     @Override
     public void delete(Long filmId) {
-//        checkFilm(filmId);
-//        String sql = "DELETE FROM FILMS WHERE FILM_ID = ?";
-//        jdbcTemplate.getJdbcTemplate().update(sql, filmId);
         Film film = checkFilm(filmId).get(0);
         film.getLikes().forEach(userId -> removeFilmLikes(filmId, userId));
         film.getLikes()

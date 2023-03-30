@@ -62,10 +62,11 @@ CREATE TABLE IF NOT EXISTS friendship(
 
 CREATE TABLE IF NOT EXISTS films_genres (
     film_id bigint   NOT NULL,
-    genre_id bigint   NOT NULL,
+    genre_id bigint   NOT NULL ,
     CONSTRAINT pk_films_genres PRIMARY KEY (film_id,genre_id),
 	CONSTRAINT fk_films_genres_film_id FOREIGN KEY(film_id) REFERENCES films (film_id) ON DELETE CASCADE,
-	CONSTRAINT fk_films_genres_genre_id FOREIGN KEY(genre_id) REFERENCES genres (genre_id) ON DELETE CASCADE
+	CONSTRAINT fk_films_genres_genre_id FOREIGN KEY(genre_id) REFERENCES genres (genre_id) ON DELETE CASCADE,
+
 );
 
 CREATE TABLE IF NOT EXISTS directors (
