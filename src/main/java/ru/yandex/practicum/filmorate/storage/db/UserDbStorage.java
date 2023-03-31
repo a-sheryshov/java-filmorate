@@ -134,13 +134,12 @@ public class UserDbStorage implements UserStorage {
         return filmRows.next();
     }
 
-    private List<User> checkUser(Long id) {
+    private void checkUser(Long id) {
         String sql = "SELECT * FROM USERS WHERE USER_ID = ?";
         List<User> result = jdbcTemplate.getJdbcTemplate().query(sql, userMapper, id);
         if (result.isEmpty()) {
             throw new ObjectNotFoundException("User not found");
         }
-        return result;
     }
 
 
@@ -222,19 +221,10 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public void delete(Long userId) {
-        User user = checkUser(userId).get(0);
-        user.getFriends().forEach(idFriend -> removeFriendship(userId, idFriend));
-        user.getLikes()
-                .forEach(idLike -> {
-                    String sql = String.format("DELETE FROM films_likes WHERE film_id = %s AND user_id = %s",
 
-                            idLike, userId
-                    );
-                    jdbcTemplate.getJdbcTemplate().update(sql);
-                });
+        checkUser(userId);
+        String sql = "DELETE FROM USERS WHERE user_id = ?";
 
-        jdbcTemplate.getJdbcTemplate().update(
-                String.format("DELETE FROM users WHERE user_id = %s", userId)
-        );
+        jdbcTemplate.getJdbcTemplate().update(sql, userId);
     }
 }
