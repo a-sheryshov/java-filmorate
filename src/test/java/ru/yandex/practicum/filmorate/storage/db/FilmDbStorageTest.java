@@ -89,7 +89,7 @@ class FilmDbStorageTest {
         genre1.setId(1L);
         Genre genre2 = new Genre();
         genre2.setId(2L);
-        film.setGenres(List.of(genre1, genre2));
+        film.setGenres(Set.of(genre1, genre2));
         return film;
     }
 
