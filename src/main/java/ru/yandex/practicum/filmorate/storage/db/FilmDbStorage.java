@@ -234,7 +234,7 @@ public class FilmDbStorage implements FilmStorage {
 
     private void createGenresByFilm(Film film) {
         checkFilm(film.getId());
-        String sql = "INSERT INTO FILMS_GENRES (FILM_ID, GENRE_ID) VALUES(?, ?), ORDER BY genre_id ASC";
+        String sql = "INSERT INTO FILMS_GENRES (FILM_ID, GENRE_ID) VALUES(?, ?)";
         Set<Genre> genres = film.getGenres();
         if (genres == null) {
             return;
