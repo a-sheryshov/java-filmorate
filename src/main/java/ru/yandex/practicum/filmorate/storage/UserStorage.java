@@ -12,5 +12,7 @@ public interface UserStorage extends ModelStorage<User> {
 
     void removeFriendship(Long filterId1, Long filterId2);
 
+    void delete(Long userId);
+
     void checkUser(Long id);
 }

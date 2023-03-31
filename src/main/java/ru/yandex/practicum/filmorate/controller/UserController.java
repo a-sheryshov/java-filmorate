@@ -34,4 +34,9 @@ public class UserController extends AbstractModelController<User, UserService> {
     public List<User> getCommonFriends(@PathVariable Long id, @PathVariable Long userId) {
         return service.getCommonFriends(id, userId);
     }
+
+    @DeleteMapping("/{userId}")
+    public void deleteUser(@PathVariable Long userId) {
+        service.delete(userId);
+    }
 }
