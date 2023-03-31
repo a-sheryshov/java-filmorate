@@ -261,29 +261,16 @@ public class FilmDbStorage implements FilmStorage {
         createGenresByFilm(film);
     }
 
-    private void removeFilmLikes(Long filmId, Long userId) {
-        jdbcTemplate.getJdbcTemplate().update("DELETE FROM films_likes WHERE film_id = ? AND user_id = ?",
-                filmId, userId
-        );
-    }
-
     @Override
     public void delete(Long filmId) {
-        Film film = checkFilm(filmId).get(0);
-        film.getLikes().forEach(userId -> removeFilmLikes(filmId, userId));
-        film.getLikes()
 
-                .forEach(idLike -> {
-                    String sql = String.format("DELETE FROM films_likes WHERE film_id = %s AND user_id = %s",
+        String deleteLikesSql = "DELETE FROM films_likes WHERE film_id = :filmId";
+        String deleteFilmSql = "DELETE FROM films WHERE film_id = :filmId";
 
-                            idLike, filmId
-                    );
-                    jdbcTemplate.getJdbcTemplate().update(sql);
-                });
+        Map<String, Object> parameters = Collections.singletonMap("filmId", filmId);
 
-        jdbcTemplate.getJdbcTemplate().update(
-                String.format("DELETE FROM films WHERE film_id = %s", filmId)
-        );
+        jdbcTemplate.update(deleteLikesSql, parameters);
+        jdbcTemplate.update(deleteFilmSql, parameters);
     }
 
 }
