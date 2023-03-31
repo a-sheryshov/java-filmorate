@@ -143,6 +143,7 @@ public class UserDbStorage implements UserStorage {
         return result;
     }
 
+
     private void checkUser(List<User> users) {
         Set<Long> ids = users.stream().map(AbstractModel::getId).collect(Collectors.toSet());
         String sql =
