@@ -48,5 +48,33 @@ public class FilmService extends AbstractModelService<Film, FilmStorage> {
         log.info("Film with id {} is deleted", filmId);
     }
 
+    public List<Film> searchFilms(String query, String by) {
+//        if (by == null || by.isEmpty()) {
+//            by = List.of("title"); // Если by не указан, ищем только по названию фильма
+//        }
+//
+//        List<Film> films = new ArrayList<>();
+//        for (String searchBy : by) {
+//            switch (searchBy) {
+//                case "title":
+//                    films.addAll(storage. // ищем по названию фильма(query));
+//                    break;
+//                case "director":
+//                    films.addAll(storage. // ищем по режиссеру фильма(query));
+//                    break;
+//                default: // Если указан неизвестный тип поиска, пропускаем его
+//                    break;
+//            }
+//        }
+//
+//        return films;
+//        log.info("Film with given parameters not found");
+        storage.searchFilms(query, by);
+        Film film = new Film();
+        log.info("Film with given request {} or given name/director {} is found", query, by);
+        return (List<Film>) film;
+
+    }
+
 }
 

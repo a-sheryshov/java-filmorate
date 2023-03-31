@@ -272,5 +272,33 @@ public class FilmDbStorage implements FilmStorage {
         jdbcTemplate.update(deleteLikesSql, parameters);
         jdbcTemplate.update(deleteFilmSql, parameters);
     }
+    @Override
+    public List<Film> searchFilms(String query, String by) {
+        String sql = "SELECT * FROM films WHERE (:directorSearch OR :titleSearch)";
 
-}
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("directorSearch", false);
+        parameters.put("titleSearch", false);
+
+        if (by.contains("director")) {
+            sql += " AND LOWER(director) LIKE LOWER(:query)";
+            parameters.put("directorSearch", true);
+            parameters.put("query", "%" + query + "%");
+        }
+
+        if (by.contains("title")) {
+            sql += " AND LOWER(title) LIKE LOWER(:query)";
+            parameters.put("titleSearch", true);
+            parameters.put("query", "%" + query + "%");
+        }
+
+        return jdbcTemplate.query(sql, parameters, (rs, rowNum) -> {
+            Film film = new Film();
+            film.setId(rs.getLong("film_id"));
+            film.setName(rs.getString("title"));
+           // film.setDirector(rs.getString("director"));
+            return film;
+        });
+    }
+
+    }

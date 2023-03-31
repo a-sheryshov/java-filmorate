@@ -34,4 +34,8 @@ public class FilmController extends AbstractModelController<Film, FilmService> {
     public void deleteFilm(@PathVariable Long filmId) {
         service.delete(filmId);
     }
+    @GetMapping("/films/search")
+    public List<Film> searchFilms(@RequestParam("query") String query, @RequestParam("by") String by) {
+        return service.searchFilms(query, by);
+    }
 }
