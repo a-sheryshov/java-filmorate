@@ -39,6 +39,7 @@ public class Film extends AbstractModel {
     @AssertTrue(message = "Should be after " + CINEMA_CREATION_DATE_STR)
     private boolean isValidReleaseDate() {
         return !releaseDate.isBefore(CINEMA_CREATION_DATE);
+
     }
 
 }
