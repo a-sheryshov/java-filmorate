@@ -13,7 +13,7 @@ public interface ModelStorage<T extends AbstractModel> {
 
     T read(Long id);
 
-    List<T> read(Set<Long> id_set);
+    List<T> read(Set<Long> idSet);
 
     List<T> readAll();
 }
