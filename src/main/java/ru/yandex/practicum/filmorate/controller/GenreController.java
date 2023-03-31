@@ -14,4 +14,6 @@ public class GenreController extends AbstractModelController<Genre, GenreService
     public GenreController(GenreService service) {
         super(service);
     }
+
+
 }

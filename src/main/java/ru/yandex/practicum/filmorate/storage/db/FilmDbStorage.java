@@ -148,8 +148,8 @@ public class FilmDbStorage implements FilmStorage {
             }
         });
     }
-
-    private void checkFilm(Long id) {
+@Override
+    public void checkFilm(Long id) {
         String sql =
                 "SELECT f.FILM_ID, f.NAME, f.DESCRIPTION, f.RELEASE_DATE, f.DURATION, f.RATING_ID, r.NAME R_NAME " +
                         "FROM FILMS f JOIN RATINGS r ON f.RATING_ID = r.RATING_ID " +

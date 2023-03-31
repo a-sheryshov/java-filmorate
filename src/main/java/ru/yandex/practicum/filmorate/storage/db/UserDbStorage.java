@@ -133,8 +133,8 @@ public class UserDbStorage implements UserStorage {
         SqlRowSet filmRows = jdbcTemplate.getJdbcTemplate().queryForRowSet(sql, email);
         return filmRows.next();
     }
-
-    private void checkUser(Long id) {
+@Override
+    public void checkUser(Long id) {
         String sql = "SELECT * FROM USERS WHERE USER_ID = ?";
         List<User> result = jdbcTemplate.getJdbcTemplate().query(sql, userMapper, id);
         if (result.isEmpty()) {
