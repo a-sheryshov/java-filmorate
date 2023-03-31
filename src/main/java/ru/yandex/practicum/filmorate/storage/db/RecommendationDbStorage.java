@@ -47,7 +47,6 @@ public class RecommendationDbStorage implements RecommendationStorage {
 
         List<Long> filmIds = jdbcTemplate.getJdbcTemplate().queryForList(sql, Long.class, userToRecommendationId, userId);
         Set<Long> ids = new HashSet<>(filmIds);
-        List<Film> result = filmDbStorage.read(ids);
-        return result;
+        return filmDbStorage.read(ids);
     }
 }

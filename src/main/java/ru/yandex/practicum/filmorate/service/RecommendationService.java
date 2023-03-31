@@ -1,5 +1,7 @@
 package ru.yandex.practicum.filmorate.service;
 
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,23 +18,16 @@ import java.util.List;
 
 @Service
 @Slf4j
-@RequiredArgsConstructor
+@AllArgsConstructor
 public class RecommendationService {
     private UserDbStorage userDbStorage;
     private RecommendationStorage recommendationStorage;
-
-    @Autowired
-    public RecommendationService(UserDbStorage userDbStorage, RecommendationDbStorage recommendationDbStorage) {
-        this.userDbStorage = userDbStorage;
-        this.recommendationStorage = recommendationDbStorage;
-    }
-
     public List<Film> getRecommendations(Long userId) {
         userDbStorage.checkUser(userId);
         List<Film> recommendationFilms = new ArrayList<>();
         User userToRecommendation = getUserWithMostTotalLikes(userId);
         if (userToRecommendation.getName() == null) {
-            log.info("Для пользователя с id {} нет рекомендованных фильмов", userId);
+            log.info("There are no recommended movies for user with id {}", userId);
             return recommendationFilms;
         }
         recommendationFilms = recommendationStorage.getLikedFilms(userId, userToRecommendation.getId());
