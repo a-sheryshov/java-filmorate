@@ -74,6 +74,7 @@ public class FilmDbStorage implements FilmStorage {
         return result;
     }
 
+
     @Override
     public List<Film> getPopular(Integer limit) {
         String sql =
@@ -107,8 +108,10 @@ public class FilmDbStorage implements FilmStorage {
         values.put("RELEASE_DATE", film.getReleaseDate());
         values.put("DURATION", film.getDuration());
         values.put("RATING_ID", film.getMpa().getId());
+        values.put("GENRE_ID", film.getGenres());
         film.setId(simpleJdbcInsert.executeAndReturnKey(values).longValue());
         createGenresByFilm(film);
+        readGenres(film);
         return film;
     }
 
@@ -122,11 +125,13 @@ public class FilmDbStorage implements FilmStorage {
         parameterSource.addValue("dur", film.getDuration());
         parameterSource.addValue("rid", film.getMpa().getId());
         parameterSource.addValue("fid", film.getId());
+
         String sql =
                 "UPDATE FILMS SET NAME = :name, DESCRIPTION = :desc, RELEASE_DATE = :date, DURATION = :dur, " +
                         "RATING_ID = :rid WHERE FILM_ID = :fid";
         jdbcTemplate.update(sql, parameterSource);
         updateGenresByFilm(film);
+        readGenres(film);
         return read(film.getId());
     }
 
@@ -150,7 +155,7 @@ public class FilmDbStorage implements FilmStorage {
         });
     }
 
-    private void checkFilm(Long id) {
+    private List<Film> checkFilm(Long id) {
         String sql =
                 "SELECT f.FILM_ID, f.NAME, f.DESCRIPTION, f.RELEASE_DATE, f.DURATION, f.RATING_ID, r.NAME R_NAME " +
                         "FROM FILMS f JOIN RATINGS r ON f.RATING_ID = r.RATING_ID " +
@@ -159,6 +164,7 @@ public class FilmDbStorage implements FilmStorage {
         if (result.isEmpty()) {
             throw new ObjectNotFoundException("Film not found");
         }
+        return result;
     }
 
     private void checkFilm(List<Film> films) {
@@ -253,6 +259,18 @@ public class FilmDbStorage implements FilmStorage {
         String sql = "DELETE FROM FILMS_GENRES WHERE FILM_ID = ?";
         jdbcTemplate.getJdbcTemplate().update(sql, film.getId());
         createGenresByFilm(film);
+    }
+
+    @Override
+    public void delete(Long filmId) {
+
+        String deleteLikesSql = "DELETE FROM films_likes WHERE film_id = :filmId";
+        String deleteFilmSql = "DELETE FROM films WHERE film_id = :filmId";
+
+        Map<String, Object> parameters = Collections.singletonMap("filmId", filmId);
+
+        jdbcTemplate.update(deleteLikesSql, parameters);
+        jdbcTemplate.update(deleteFilmSql, parameters);
     }
 
 }

@@ -3,15 +3,16 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.validation.annotation.Validated;
 import ru.yandex.practicum.filmorate.exception.ObjectNotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
 import java.util.List;
 
-
-@Service
 @Slf4j
+@Validated
+@Service
 public class FilmService extends AbstractModelService<Film, FilmStorage> {
     private final UserService userService;
 
@@ -42,4 +43,10 @@ public class FilmService extends AbstractModelService<Film, FilmStorage> {
         log.info("Like from {} removed from film {}", id, film);
     }
 
+    public void delete(Long filmId) {
+        storage.delete(filmId);
+        log.info("Film with id {} is deleted", filmId);
+    }
+
 }
+
