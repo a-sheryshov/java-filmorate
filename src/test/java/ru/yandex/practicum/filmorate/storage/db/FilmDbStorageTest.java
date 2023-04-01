@@ -29,7 +29,7 @@ class FilmDbStorageTest {
     private final DirectorStorage directorStorage;
 
     @BeforeEach
-    void loadDirectors(){
+    void loadDirectors() {
         Director director1 = new Director();
         director1.setId(1L);
         director1.setName("Vachovski brothers");
