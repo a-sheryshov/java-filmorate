@@ -68,7 +68,7 @@ public class ReviewDbStorage implements ReviewStorage {
         String sqlGetReviewById = "SELECT R.*, COALESCE(G.USEFUL, 0) AS USEFUL " +
             "FROM REVIEWS R LEFT JOIN (SELECT REVIEW_ID, COUNT(CASE WHEN IS_POSITIVE = true THEN 1 END) " +
             "- COUNT(CASE WHEN IS_POSITIVE = false THEN 1 END) as USEFUL FROM GRADES GROUP BY REVIEW_ID) G " +
-            "ON R.REVIEW_ID = G.REVIEW_ID WHERE FILM_ID = :id";
+            "ON R.REVIEW_ID = G.REVIEW_ID WHERE R.REVIEW_ID = :id";
         SqlParameterSource parameters = new MapSqlParameterSource("id", id);
         List<Review> result = jdbcTemplate.query(sqlGetReviewById, parameters, new ReviewMapper());
         if (result.isEmpty()) {
@@ -79,7 +79,15 @@ public class ReviewDbStorage implements ReviewStorage {
 
     @Override
     public List<Review> read(Set<Long> id) {
-        return List.of();
+        if (id.size() == 0) {
+            return List.of();
+        }
+        String sqlGetAllReviewsBySetId = "SELECT R.*, COALESCE(G.USEFUL, 0) AS USEFUL " +
+            "FROM REVIEWS R LEFT JOIN (SELECT REVIEW_ID, COUNT(CASE WHEN IS_POSITIVE = true THEN 1 END) " +
+            "- COUNT(CASE WHEN IS_POSITIVE = false THEN 1 END) as USEFUL FROM GRADES GROUP BY REVIEW_ID) G " +
+            "ON R.REVIEW_ID = G.REVIEW_ID WHERE R.REVIEW_ID IN (:ids) ORDER BY USEFUL DESC";
+        MapSqlParameterSource parameterSource = new MapSqlParameterSource("ids", id);
+        return jdbcTemplate.query(sqlGetAllReviewsBySetId, parameterSource, reviewMapper);
     }
 
     @Override

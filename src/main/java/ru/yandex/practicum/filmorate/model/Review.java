@@ -10,6 +10,7 @@ import javax.validation.constraints.Size;
 @Setter
 @EqualsAndHashCode(callSuper = true)
 @AllArgsConstructor
+@NoArgsConstructor
 @ToString
 public class Review extends AbstractModel {
     @JsonProperty("reviewId")
@@ -24,7 +25,4 @@ public class Review extends AbstractModel {
     @NotNull
     private Long filmId;
     private Long useful = 0L;
-
-    public Review() {
-    }
 }
