@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.validation.annotation.Validated;
 import ru.yandex.practicum.filmorate.exception.ObjectNotFoundException;
 import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.model.EventValue;
@@ -14,9 +15,9 @@ import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import java.util.Date;
 import java.util.List;
 
-
-@Service
 @Slf4j
+@Validated
+@Service
 public class FilmService extends AbstractModelService<Film, FilmStorage> {
     private final UserService userService;
     private final EventStorage eventStorage;
@@ -28,8 +29,8 @@ public class FilmService extends AbstractModelService<Film, FilmStorage> {
         this.eventStorage = eventStorage;
     }
 
-    public List<Film> getPopular(Integer count) {
-        return storage.getPopular(count);
+    public List<Film> getPopular(Integer count, Long genreId, Integer year) {
+        return storage.getPopular(count, genreId, year);
     }
 
     public void addLike(Long id, Long userId) {
@@ -51,4 +52,14 @@ public class FilmService extends AbstractModelService<Film, FilmStorage> {
         log.info("Like from {} removed from film {}", id, film);
     }
 
+    public void delete(Long filmId) {
+        storage.delete(filmId);
+        log.info("Film with id {} is deleted", filmId);
+    }
+
+    public List<Film> readByDirector(Long directorId, String sortBy) {
+        return storage.readByDirector(directorId, sortBy);
+    }
+
 }
+

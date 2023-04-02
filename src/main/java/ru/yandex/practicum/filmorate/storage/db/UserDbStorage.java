@@ -15,7 +15,6 @@ import ru.yandex.practicum.filmorate.model.AbstractModel;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
-
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -24,6 +23,7 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public class UserDbStorage implements UserStorage {
     private final NamedParameterJdbcTemplate jdbcTemplate;
+
     private final UserMapper userMapper;
 
     @Override
@@ -92,7 +92,7 @@ public class UserDbStorage implements UserStorage {
         parameterSource.addValue("birthday", user.getBirthday());
         parameterSource.addValue("uid", user.getId());
         String sql = "UPDATE USERS SET LOGIN = :login, EMAIL = :email, NAME = :name, BIRTHDAY = :birthday " +
-                        "WHERE USER_ID = :uid";
+                "WHERE USER_ID = :uid";
         jdbcTemplate.update(sql, parameterSource);
         return user;
     }
@@ -134,7 +134,8 @@ public class UserDbStorage implements UserStorage {
         return filmRows.next();
     }
 
-    private void checkUser(Long id) {
+    @Override
+    public void checkUser(Long id) {
         String sql = "SELECT * FROM USERS WHERE USER_ID = ?";
         List<User> result = jdbcTemplate.getJdbcTemplate().query(sql, userMapper, id);
         if (result.isEmpty()) {
@@ -142,7 +143,7 @@ public class UserDbStorage implements UserStorage {
         }
     }
 
-    private void checkUser(List <User> users) {
+    private void checkUser(List<User> users) {
         Set<Long> ids = users.stream().map(AbstractModel::getId).collect(Collectors.toSet());
         String sql =
                 "SELECT COUNT(*) AS COUNT FROM USERS u WHERE u.USER_ID IN (:ids)";
@@ -150,10 +151,10 @@ public class UserDbStorage implements UserStorage {
         SqlRowSet result = jdbcTemplate.queryForRowSet(sql, parameters);
         if (result.next()) {
             if (result.getInt("COUNT") != ids.size())
-                throw new  ObjectNotFoundException("check id's");
+                throw new ObjectNotFoundException("check id's");
             return;
         }
-        throw new  ObjectNotFoundException("check id's");
+        throw new ObjectNotFoundException("check id's");
     }
 
     private void readFriends(User user) {
@@ -165,7 +166,7 @@ public class UserDbStorage implements UserStorage {
         List<Long> friends = jdbcTemplate.getJdbcTemplate().queryForList(sql, Long.class,
                 user.getId(), user.getId());
         user.getFriends().clear();
-        for (Long id : friends){
+        for (Long id : friends) {
             user.getFriends().add(id);
         }
     }
@@ -187,7 +188,8 @@ public class UserDbStorage implements UserStorage {
                     .filter(user -> user.getId().equals(sqlRowSet.getLong("USER_ID")))
                     .findFirst()
                     .ifPresentOrElse(user -> user.getFriends().add(sqlRowSet.getLong("FRIEND_ID")),
-                            ()-> {});
+                            () -> {
+                            });
         }
     }
 
@@ -212,7 +214,17 @@ public class UserDbStorage implements UserStorage {
                     .filter(user -> user.getId().equals(sqlRowSet.getLong("USER_ID")))
                     .findFirst()
                     .ifPresentOrElse(user -> user.getLikes().add(sqlRowSet.getLong("FILM_ID")),
-                            ()->{});
+                            () -> {
+                            });
         }
+    }
+
+    @Override
+    public void delete(Long userId) {
+
+        checkUser(userId);
+        String sql = "DELETE FROM USERS WHERE user_id = ?";
+
+        jdbcTemplate.getJdbcTemplate().update(sql, userId);
     }
 }

@@ -54,8 +54,7 @@ public class UserService extends AbstractModelService<User, UserStorage> {
         return storage.read(friendsIds);
     }
 
-    public List<User> getCommonFriends(@Valid @Positive Long firstUserid
-            , @Valid @Positive Long secondUserId) {
+    public List<User> getCommonFriends(@Valid @Positive Long firstUserid, @Valid @Positive Long secondUserId) {
         Set<Long> firstUsersFriends = storage.read(firstUserid).getFriends();
         Set<Long> secondUsersFriends = storage.read(secondUserId).getFriends();
         Set<Long> commonFriends = firstUsersFriends.stream()
@@ -109,6 +108,11 @@ public class UserService extends AbstractModelService<User, UserStorage> {
         }
         eventStorage.create(new Event(new Date().getTime(), id, EventValue.FRIEND, OperationValue.REMOVE, friendId));
         log.info("Friendship between {} and {} removed", friendId, user);
+    }
+
+    public void delete(Long userId) {
+        storage.delete(userId);
+        log.info("User with id {} is deleted", userId);
     }
 
     public List<Event> getEvent(Long id) {

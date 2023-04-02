@@ -26,7 +26,19 @@ public class FilmController extends AbstractModelController<Film, FilmService> {
     }
 
     @GetMapping("/popular")
-    public List<Film> findPopularMovies(@RequestParam(defaultValue = "10") int count) {
-        return service.getPopular(count);
+    public List<Film> findPopularMovies(@RequestParam(defaultValue = "10") Integer count,
+                                        @RequestParam(required = false) Long genreId,
+                                        @RequestParam(required = false) Integer year) {
+        return service.getPopular(count, genreId, year);
+    }
+
+    @DeleteMapping("/{filmId}")
+    public void deleteFilm(@PathVariable Long filmId) {
+        service.delete(filmId);
+    }
+
+    @GetMapping("/director/{directorId}")
+    public List<Film> readFilmsByDirector(@PathVariable Long directorId, @RequestParam String sortBy) {
+        return service.readByDirector(directorId, sortBy);
     }
 }

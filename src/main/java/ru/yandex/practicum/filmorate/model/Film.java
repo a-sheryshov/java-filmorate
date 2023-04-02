@@ -15,9 +15,9 @@ import java.util.TreeSet;
 @EqualsAndHashCode(callSuper = true)
 @ToString
 public class Film extends AbstractModel {
+    public static final int MAX_DESCRIPTION_LEN = 200;
     private static final String CINEMA_CREATION_DATE_STR = "1895-12-28";
     private static final LocalDate CINEMA_CREATION_DATE = LocalDate.parse(CINEMA_CREATION_DATE_STR);
-    public static final int MAX_DESCRIPTION_LEN = 200;
     private static final String DESC_LEN_VALIDATION_ERR_MSG =
             "Description should be less than " + MAX_DESCRIPTION_LEN + " symbols";
 
@@ -35,6 +35,8 @@ public class Film extends AbstractModel {
     private Set<Genre> genres = new TreeSet<>(Comparator.comparing(g -> g.id));
     @NotNull
     private final Set<Long> likes = new HashSet<>();
+    @NotNull
+    private Set<Director> directors = new HashSet<>();
 
     @AssertTrue(message = "Should be after " + CINEMA_CREATION_DATE_STR)
     private boolean isValidReleaseDate() {
