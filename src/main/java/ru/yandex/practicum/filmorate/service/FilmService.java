@@ -22,8 +22,8 @@ public class FilmService extends AbstractModelService<Film, FilmStorage> {
         this.userService = userService;
     }
 
-    public List<Film> getPopular(Integer count) {
-        return storage.getPopular(count);
+    public List<Film> getPopular(Integer count, Long genreId, Integer year) {
+        return storage.getPopular(count, genreId, year);
     }
 
     public void addLike(Long id, Long userId) {
