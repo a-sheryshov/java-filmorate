@@ -47,9 +47,9 @@ class GenreDbStorageTest {
 
         List<Genre> actual = genreStorage.readAll();
         int firstId = actual.size() - 2;
-        int second_id = actual.size() - 1;
+        int secondId = actual.size() - 1;
         assertEquals(firstExpected,  actual.get(firstId));
-        assertEquals(secondExpected, actual.get(second_id));
+        assertEquals(secondExpected, actual.get(secondId));
         assertEquals(recordCount, actual.size());
     }
 
