@@ -114,6 +114,7 @@ public class FilmDbStorage implements FilmStorage {
         parameterSource.addValue("gi", genreId);
         parameterSource.addValue("year", year);
         parameterSource.addValue("lim", limit);
+        
         List<Film> result = jdbcTemplate.query(sql, parameterSource, filmMapper);
         readLikes(result);
         readGenres(result);

@@ -41,4 +41,14 @@ public class FilmController extends AbstractModelController<Film, FilmService> {
     public List<Film> readFilmsByDirector(@PathVariable Long directorId, @RequestParam String sortBy) {
         return service.readByDirector(directorId, sortBy);
     }
+
+    @DeleteMapping("/{filmId}")
+    public void deleteFilm(@PathVariable Long filmId) {
+        service.delete(filmId);
+    }
+
+    @GetMapping("/director/{directorId}")
+    public List<Film> readFilmsByDirector(@PathVariable Long directorId, @RequestParam String sortBy) {
+        return service.readByDirector(directorId, sortBy);
+    }
 }
