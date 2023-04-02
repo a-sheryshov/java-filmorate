@@ -8,5 +8,5 @@ public interface FilmStorage extends ModelStorage<Film> {
 
     void saveLikes(Film film);
 
-    List<Film> getPopular(Integer count);
+    List<Film> getPopular(Integer count, Long genreId, Integer year);
 }

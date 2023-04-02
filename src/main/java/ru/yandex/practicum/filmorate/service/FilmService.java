@@ -14,15 +14,30 @@ import java.util.List;
 @Slf4j
 public class FilmService extends AbstractModelService<Film, FilmStorage> {
     private final UserService userService;
+    private final GenreService genreService;
 
     @Autowired
-    public FilmService(FilmStorage storage, UserService userService) {
+    public FilmService(FilmStorage storage, UserService userService, GenreService genreService) {
         super(storage);
         this.userService = userService;
+        this.genreService = genreService;
     }
 
-    public List<Film> getPopular(Integer count) {
-        return storage.getPopular(count);
+    public List<Film> getPopular(Integer count, Long genreId, Integer year) {
+//        List<Film> getPopular = storage.getPopular(count);
+//        if (genreId != null) {
+//            Genre genre = genreService.read(genreId);
+//            getPopular = getPopular.stream()
+//                    .filter(film -> film.getGenres().contains(genre))
+//                    .collect(Collectors.toList());
+//        }
+//        if (year != null) {
+//            getPopular = getPopular.stream()
+//                    .filter(film -> film.getReleaseDate().getYear() == year)
+//                    .collect(Collectors.toList());
+//        }
+//        return getPopular;
+        return storage.getPopular(count, genreId, year);
     }
 
     public void addLike(Long id, Long userId) {

@@ -75,7 +75,7 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public List<Film> getPopular(Integer limit) {
+    public List<Film> getPopular(Integer limit, Long genreId, Integer year) {
         String sql =
                 "SELECT f.FILM_ID, f.NAME, f.DESCRIPTION, f.RELEASE_DATE, f.DURATION, f.RATING_ID, r.NAME R_NAME\n" +
                         "FROM FILMS f " +
@@ -85,10 +85,26 @@ public class FilmDbStorage implements FilmStorage {
                         "COUNT(USER_ID) AS cnt " +
                         "FROM FILMS_LIKES " +
                         "GROUP BY FILM_ID " +
-                        ") l ON f.FILM_ID = l.FILM_ID " +
-                        "ORDER BY l.cnt DESC " +
-                        "LIMIT :lim";
-        SqlParameterSource parameterSource = new MapSqlParameterSource("lim", limit);
+                        ") l ON f.FILM_ID = l.FILM_ID ";
+
+        if (year != null && genreId != null) {
+            sql += "WHERE EXTRACT (YEAR FROM CAST(f.RELEASE_DATE AS DATE)) = :year " +
+                    "AND f.FILM_ID IN (SELECT FG.FILM_ID FROM FILMS_GENRES AS FG " +
+                    "WHERE fg.GENRE_ID = :gi) ";
+
+        } else if (genreId != null) {
+            sql += "WHERE f.FILM_ID IN (SELECT FG.FILM_ID FROM FILMS_GENRES AS FG " +
+                    "WHERE fg.GENRE_ID = :gi) ";
+
+        } else if (year != null) {
+            sql += "WHERE EXTRACT (YEAR FROM CAST(f.RELEASE_DATE AS DATE)) = :year ";
+        }
+
+        sql += "ORDER BY l.cnt DESC LIMIT :lim";
+        MapSqlParameterSource parameterSource = new MapSqlParameterSource();
+        parameterSource.addValue("gi", genreId);
+        parameterSource.addValue("year", year);
+        parameterSource.addValue("lim", limit);
         List<Film> result = jdbcTemplate.query(sql, parameterSource, filmMapper);
         readLikes(result);
         readGenres(result);
