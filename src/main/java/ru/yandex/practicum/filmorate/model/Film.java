@@ -35,6 +35,8 @@ public class Film extends AbstractModel {
     private Set<Genre> genres = new TreeSet<>(Comparator.comparing(g -> g.id));
     @NotNull
     private final Set<Long> likes = new HashSet<>();
+    @NotNull
+    private Set<Director> directors = new HashSet<>();
 
     @AssertTrue(message = "Should be after " + CINEMA_CREATION_DATE_STR)
     private boolean isValidReleaseDate() {
