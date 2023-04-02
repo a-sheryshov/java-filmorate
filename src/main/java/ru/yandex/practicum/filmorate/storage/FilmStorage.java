@@ -13,4 +13,7 @@ public interface FilmStorage extends ModelStorage<Film> {
     void delete(Long filmIid);
 
     void checkFilm(Long id);
+
+    List<Film> readByDirector(Long directorId, String sortBy);
+
 }

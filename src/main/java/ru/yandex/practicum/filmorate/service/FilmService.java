@@ -48,5 +48,9 @@ public class FilmService extends AbstractModelService<Film, FilmStorage> {
         log.info("Film with id {} is deleted", filmId);
     }
 
+    public List<Film> readByDirector(Long directorId, String sortBy) {
+        return storage.readByDirector(directorId, sortBy);
+    }
+
 }
 
