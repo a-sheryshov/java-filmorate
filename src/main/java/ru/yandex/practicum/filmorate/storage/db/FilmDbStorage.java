@@ -41,9 +41,9 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public Film read(Long id) {
         String sql =
-                "SELECT f.FILM_ID, f.NAME, f.DESCRIPTION, f.RELEASE_DATE, f.DURATION, f.RATING_ID, r.NAME R_NAME " +
-                        "FROM FILMS f JOIN RATINGS r ON f.RATING_ID = r.RATING_ID " +
-                        "WHERE f.FILM_ID = :id";
+            "SELECT f.FILM_ID, f.NAME, f.DESCRIPTION, f.RELEASE_DATE, f.DURATION, f.RATING_ID, r.NAME R_NAME " +
+                "FROM FILMS f JOIN RATINGS r ON f.RATING_ID = r.RATING_ID " +
+                "WHERE f.FILM_ID = :id";
         MapSqlParameterSource parameterSource = new MapSqlParameterSource("id", id);
         List<Film> result = jdbcTemplate.query(sql, parameterSource, filmMapper);
         if (result.isEmpty()) {
@@ -59,9 +59,9 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public List<Film> read(Set<Long> idSet) {
         String sql =
-                "SELECT f.FILM_ID, f.NAME, f.DESCRIPTION, f.RELEASE_DATE, f.DURATION, f.RATING_ID, r.NAME R_NAME " +
-                        "FROM FILMS f JOIN RATINGS r ON f.RATING_ID = r.RATING_ID WHERE f.FILM_ID IN (:ids) " +
-                        "ORDER BY f.FILM_ID";
+            "SELECT f.FILM_ID, f.NAME, f.DESCRIPTION, f.RELEASE_DATE, f.DURATION, f.RATING_ID, r.NAME R_NAME " +
+                "FROM FILMS f JOIN RATINGS r ON f.RATING_ID = r.RATING_ID WHERE f.FILM_ID IN (:ids) " +
+                "ORDER BY f.FILM_ID";
         SqlParameterSource parameterSource = new MapSqlParameterSource("ids", idSet);
         List<Film> result = jdbcTemplate.query(sql, parameterSource, filmMapper);
         readLikes(result);
@@ -73,8 +73,8 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public List<Film> readAll() {
         String sql =
-                "SELECT f.FILM_ID, f.NAME, f.DESCRIPTION, f.RELEASE_DATE, f.DURATION, f.RATING_ID, r.NAME R_NAME " +
-                        "FROM FILMS f JOIN RATINGS r ON f.RATING_ID = r.RATING_ID ORDER BY f.FILM_ID";
+            "SELECT f.FILM_ID, f.NAME, f.DESCRIPTION, f.RELEASE_DATE, f.DURATION, f.RATING_ID, r.NAME R_NAME " +
+                "FROM FILMS f JOIN RATINGS r ON f.RATING_ID = r.RATING_ID ORDER BY f.FILM_ID";
         List<Film> result = jdbcTemplate.query(sql, filmMapper);
         readLikes(result);
         readGenres(result);
@@ -124,8 +124,8 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public Film create(Film film) {
         SimpleJdbcInsert simpleJdbcInsert = new SimpleJdbcInsert(jdbcTemplate.getJdbcTemplate())
-                .withTableName("FILMS")
-                .usingGeneratedKeyColumns("FILM_ID");
+            .withTableName("FILMS")
+            .usingGeneratedKeyColumns("FILM_ID");
 
         Map<String, Object> values = new HashMap<>();
         values.put("NAME", film.getName());
@@ -154,8 +154,8 @@ public class FilmDbStorage implements FilmStorage {
         parameterSource.addValue("fid", film.getId());
 
         String sql =
-                "UPDATE FILMS SET NAME = :name, DESCRIPTION = :desc, RELEASE_DATE = :date, DURATION = :dur, " +
-                        "RATING_ID = :rid WHERE FILM_ID = :fid";
+            "UPDATE FILMS SET NAME = :name, DESCRIPTION = :desc, RELEASE_DATE = :date, DURATION = :dur, " +
+                "RATING_ID = :rid WHERE FILM_ID = :fid";
         jdbcTemplate.update(sql, parameterSource);
         updateGenresByFilm(film);
         readGenres(film);
@@ -184,11 +184,12 @@ public class FilmDbStorage implements FilmStorage {
         });
     }
 
+    @Override
     public void checkFilm(Long id) {
         String sql =
-                "SELECT f.FILM_ID, f.NAME, f.DESCRIPTION, f.RELEASE_DATE, f.DURATION, f.RATING_ID, r.NAME R_NAME " +
-                        "FROM FILMS f JOIN RATINGS r ON f.RATING_ID = r.RATING_ID " +
-                        "WHERE f.FILM_ID = ?";
+            "SELECT f.FILM_ID, f.NAME, f.DESCRIPTION, f.RELEASE_DATE, f.DURATION, f.RATING_ID, r.NAME R_NAME " +
+                "FROM FILMS f JOIN RATINGS r ON f.RATING_ID = r.RATING_ID " +
+                "WHERE f.FILM_ID = ?";
         List<Film> result = jdbcTemplate.getJdbcTemplate().query(sql, filmMapper, id);
         if (result.isEmpty()) {
             throw new ObjectNotFoundException("Film not found");
@@ -198,7 +199,7 @@ public class FilmDbStorage implements FilmStorage {
     private void checkFilm(List<Film> films) {
         Set<Long> ids = films.stream().map(AbstractModel::getId).collect(Collectors.toSet());
         String sql =
-                "SELECT COUNT(*) AS COUNT FROM FILMS f WHERE f.FILM_ID IN (:ids)";
+            "SELECT COUNT(*) AS COUNT FROM FILMS f WHERE f.FILM_ID IN (:ids)";
         SqlParameterSource parameters = new MapSqlParameterSource("ids", ids);
         SqlRowSet result = jdbcTemplate.queryForRowSet(sql, parameters);
         if (result.next()) {
@@ -226,18 +227,18 @@ public class FilmDbStorage implements FilmStorage {
         SqlRowSet sqlRowSet = jdbcTemplate.queryForRowSet(sql, parameterSource);
         while (sqlRowSet.next()) {
             films.stream()
-                    .filter(film -> film.getId().equals(sqlRowSet.getLong("FILM_ID")))
-                    .findFirst()
-                    .ifPresentOrElse(film -> film.getLikes().add(sqlRowSet.getLong("USER_ID")),
-                            () -> {
-                            });
+                .filter(film -> film.getId().equals(sqlRowSet.getLong("FILM_ID")))
+                .findFirst()
+                .ifPresentOrElse(film -> film.getLikes().add(sqlRowSet.getLong("USER_ID")),
+                    () -> {
+                    });
         }
     }
 
     private void readGenres(Film film) {
         checkFilm(film.getId());
         String sql = "SELECT g.GENRE_ID, g.NAME FROM GENRES g NATURAL JOIN FILMS_GENRES fg WHERE fg.FILM_ID = ?"
-                + " ORDER BY GENRE_ID ASC";
+            + " ORDER BY GENRE_ID ASC";
         film.setGenres(new HashSet<>(jdbcTemplate.getJdbcTemplate().query(sql, genreMapper, film.getId())));
     }
 
@@ -246,17 +247,17 @@ public class FilmDbStorage implements FilmStorage {
         Set<Long> ids = films.stream().map(AbstractModel::getId).collect(Collectors.toSet());
         SqlParameterSource parameterSource = new MapSqlParameterSource("ids", ids);
         String sql = "SELECT g.GENRE_ID, g.NAME, fg.FILM_ID FROM GENRES g NATURAL JOIN FILMS_GENRES fg WHERE fg.FILM_ID IN (:ids)"
-                + " ORDER BY GENRE_ID ASC";
+            + " ORDER BY GENRE_ID ASC";
         SqlRowSet sqlRowSet = jdbcTemplate.queryForRowSet(sql, parameterSource);
         while (sqlRowSet.next()) {
             Genre genre = new Genre();
             genre.setId(sqlRowSet.getLong("GENRE_ID"));
             genre.setName(sqlRowSet.getString("NAME"));
             films.stream()
-                    .filter(film -> film.getId().equals(sqlRowSet.getLong("FILM_ID")))
-                    .findFirst()
-                    .ifPresentOrElse(film -> film.getGenres().add(genre), () -> {
-                    });
+                .filter(film -> film.getId().equals(sqlRowSet.getLong("FILM_ID")))
+                .findFirst()
+                .ifPresentOrElse(film -> film.getGenres().add(genre), () -> {
+                });
         }
     }
 
