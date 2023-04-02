@@ -48,6 +48,10 @@ public class FilmService extends AbstractModelService<Film, FilmStorage> {
         log.info("Film with id {} is deleted", filmId);
     }
 
+    public List<Film> readByDirector(Long directorId, String sortBy) {
+        return storage.readByDirector(directorId, sortBy);
+    }
+
     public List<Film> searchFilms(String query, String by) {
 //        if (by == null || by.isEmpty()) {
 //            by = List.of("title"); // Если by не указан, ищем только по названию фильма

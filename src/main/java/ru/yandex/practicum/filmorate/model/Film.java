@@ -4,7 +4,10 @@ import lombok.*;
 
 import javax.validation.constraints.*;
 import java.time.LocalDate;
-import java.util.*;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.TreeSet;
 
 @Getter
 @Setter
@@ -32,6 +35,8 @@ public class Film extends AbstractModel {
     private Set<Genre> genres = new TreeSet<>(Comparator.comparing(g -> g.id));
     @NotNull
     private final Set<Long> likes = new HashSet<>();
+    @NotNull
+    private Set<Director> directors = new HashSet<>();
 
     @AssertTrue(message = "Should be after " + CINEMA_CREATION_DATE_STR)
     private boolean isValidReleaseDate() {
