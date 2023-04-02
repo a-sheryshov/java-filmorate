@@ -84,7 +84,7 @@ public class FilmDbStorage implements FilmStorage {
 
 
     @Override
-    public List<Film> getPopular(Integer limit, Long genreId, Integer year) {
+    public List<Film> getPopular(Integer count, Long genreId, Integer year) {
         String sql =
                 "SELECT f.FILM_ID, f.NAME, f.DESCRIPTION, f.RELEASE_DATE, f.DURATION, f.RATING_ID, r.NAME R_NAME\n" +
                         "FROM FILMS f " +
@@ -113,7 +113,7 @@ public class FilmDbStorage implements FilmStorage {
         MapSqlParameterSource parameterSource = new MapSqlParameterSource();
         parameterSource.addValue("gi", genreId);
         parameterSource.addValue("year", year);
-        parameterSource.addValue("lim", limit);
+        parameterSource.addValue("lim", count);
 
         List<Film> result = jdbcTemplate.query(sql, parameterSource, filmMapper);
         readLikes(result);

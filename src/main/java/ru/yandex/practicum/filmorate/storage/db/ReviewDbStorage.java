@@ -35,8 +35,8 @@ public class ReviewDbStorage implements ReviewStorage {
         filmStorage.checkFilm(review.getFilmId());
 
         SimpleJdbcInsert simpleJdbcInsert = new SimpleJdbcInsert(jdbcTemplate.getJdbcTemplate())
-            .withTableName("REVIEWS")
-            .usingGeneratedKeyColumns("REVIEW_ID");
+                .withTableName("REVIEWS")
+                .usingGeneratedKeyColumns("REVIEW_ID");
 
         Map<String, Object> values = new HashMap<>();
         values.put("FILM_ID", review.getFilmId());
@@ -66,9 +66,9 @@ public class ReviewDbStorage implements ReviewStorage {
     public Review read(Long id) {
         checkReview(id);
         String sqlGetReviewById = "SELECT R.*, COALESCE(G.USEFUL, 0) AS USEFUL " +
-            "FROM REVIEWS R LEFT JOIN (SELECT REVIEW_ID, COUNT(CASE WHEN IS_POSITIVE = true THEN 1 END) " +
-            "- COUNT(CASE WHEN IS_POSITIVE = false THEN 1 END) as USEFUL FROM GRADES GROUP BY REVIEW_ID) G " +
-            "ON R.REVIEW_ID = G.REVIEW_ID WHERE R.REVIEW_ID = :id";
+                "FROM REVIEWS R LEFT JOIN (SELECT REVIEW_ID, COUNT(CASE WHEN IS_POSITIVE = true THEN 1 END) " +
+                "- COUNT(CASE WHEN IS_POSITIVE = false THEN 1 END) as USEFUL FROM GRADES GROUP BY REVIEW_ID) G " +
+                "ON R.REVIEW_ID = G.REVIEW_ID WHERE R.REVIEW_ID = :id";
         SqlParameterSource parameters = new MapSqlParameterSource("id", id);
         List<Review> result = jdbcTemplate.query(sqlGetReviewById, parameters, new ReviewMapper());
         if (result.isEmpty()) {
@@ -83,9 +83,9 @@ public class ReviewDbStorage implements ReviewStorage {
             return List.of();
         }
         String sqlGetAllReviewsBySetId = "SELECT R.*, COALESCE(G.USEFUL, 0) AS USEFUL " +
-            "FROM REVIEWS R LEFT JOIN (SELECT REVIEW_ID, COUNT(CASE WHEN IS_POSITIVE = true THEN 1 END) " +
-            "- COUNT(CASE WHEN IS_POSITIVE = false THEN 1 END) as USEFUL FROM GRADES GROUP BY REVIEW_ID) G " +
-            "ON R.REVIEW_ID = G.REVIEW_ID WHERE R.REVIEW_ID IN (:ids) ORDER BY USEFUL DESC";
+                "FROM REVIEWS R LEFT JOIN (SELECT REVIEW_ID, COUNT(CASE WHEN IS_POSITIVE = true THEN 1 END) " +
+                "- COUNT(CASE WHEN IS_POSITIVE = false THEN 1 END) as USEFUL FROM GRADES GROUP BY REVIEW_ID) G " +
+                "ON R.REVIEW_ID = G.REVIEW_ID WHERE R.REVIEW_ID IN (:ids) ORDER BY USEFUL DESC";
         MapSqlParameterSource parameterSource = new MapSqlParameterSource("ids", id);
         return jdbcTemplate.query(sqlGetAllReviewsBySetId, parameterSource, reviewMapper);
     }
@@ -93,9 +93,9 @@ public class ReviewDbStorage implements ReviewStorage {
     @Override
     public List<Review> readAll() {
         String sqlGetAllReviews = "SELECT R.*, COALESCE(G.USEFUL, 0) AS USEFUL " +
-            "FROM REVIEWS R LEFT JOIN (SELECT REVIEW_ID, COUNT(CASE WHEN IS_POSITIVE = true THEN 1 END) " +
-            "- COUNT(CASE WHEN IS_POSITIVE = false THEN 1 END) as USEFUL FROM GRADES GROUP BY REVIEW_ID) G " +
-            "ON R.REVIEW_ID = G.REVIEW_ID ORDER BY USEFUL DESC ";
+                "FROM REVIEWS R LEFT JOIN (SELECT REVIEW_ID, COUNT(CASE WHEN IS_POSITIVE = true THEN 1 END) " +
+                "- COUNT(CASE WHEN IS_POSITIVE = false THEN 1 END) as USEFUL FROM GRADES GROUP BY REVIEW_ID) G " +
+                "ON R.REVIEW_ID = G.REVIEW_ID ORDER BY USEFUL DESC ";
         return jdbcTemplate.query(sqlGetAllReviews, reviewMapper);
     }
 
@@ -142,10 +142,10 @@ public class ReviewDbStorage implements ReviewStorage {
     public List<Review> getAllReviewsByFilmId(Long id, Integer count) {
         filmStorage.checkFilm(id);
         String sqlGetAllJoinUseful =
-            "SELECT R.*, COALESCE(G.USEFUL, 0) AS USEFUL " +
-                "FROM REVIEWS R LEFT JOIN (SELECT REVIEW_ID, COUNT(CASE WHEN IS_POSITIVE = true THEN 1 END) " +
-                "- COUNT(CASE WHEN IS_POSITIVE = false THEN 1 END) as USEFUL FROM GRADES GROUP BY REVIEW_ID) G " +
-                "ON R.REVIEW_ID = G.REVIEW_ID WHERE FILM_ID = :id ORDER BY USEFUL DESC LIMIT :lim";
+                "SELECT R.*, COALESCE(G.USEFUL, 0) AS USEFUL " +
+                        "FROM REVIEWS R LEFT JOIN (SELECT REVIEW_ID, COUNT(CASE WHEN IS_POSITIVE = true THEN 1 END) " +
+                        "- COUNT(CASE WHEN IS_POSITIVE = false THEN 1 END) as USEFUL FROM GRADES GROUP BY REVIEW_ID) G " +
+                        "ON R.REVIEW_ID = G.REVIEW_ID WHERE FILM_ID = :id ORDER BY USEFUL DESC LIMIT :lim";
         MapSqlParameterSource parameterSource = new MapSqlParameterSource();
         parameterSource.addValue("id", id);
         parameterSource.addValue("lim", count);
