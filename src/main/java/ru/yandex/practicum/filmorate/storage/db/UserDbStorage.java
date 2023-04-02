@@ -69,8 +69,8 @@ public class UserDbStorage implements UserStorage {
             throw new UserAlreadyExistsException(user.getEmail() + " already exists");
         }
         SimpleJdbcInsert simpleJdbcInsert = new SimpleJdbcInsert(jdbcTemplate.getJdbcTemplate())
-                .withTableName("USERS")
-                .usingGeneratedKeyColumns("USER_ID");
+            .withTableName("USERS")
+            .usingGeneratedKeyColumns("USER_ID");
 
         Map<String, Object> values = new HashMap<>();
         values.put("EMAIL", user.getEmail());
@@ -92,7 +92,7 @@ public class UserDbStorage implements UserStorage {
         parameterSource.addValue("birthday", user.getBirthday());
         parameterSource.addValue("uid", user.getId());
         String sql = "UPDATE USERS SET LOGIN = :login, EMAIL = :email, NAME = :name, BIRTHDAY = :birthday " +
-                "WHERE USER_ID = :uid";
+            "WHERE USER_ID = :uid";
         jdbcTemplate.update(sql, parameterSource);
         return user;
     }
@@ -107,8 +107,8 @@ public class UserDbStorage implements UserStorage {
     @Override
     public void updateFriendship(Long id1, Long id2, boolean confirmed, Long filterId1, Long filterId2) {
         String sql =
-                "UPDATE FRIENDSHIP SET USER_ID1 = ?, USER_ID2 = ?, IS_CONFIRMED = ? " +
-                        "WHERE USER_ID1 = ? AND USER_ID2 = ?";
+            "UPDATE FRIENDSHIP SET USER_ID1 = ?, USER_ID2 = ?, IS_CONFIRMED = ? " +
+                "WHERE USER_ID1 = ? AND USER_ID2 = ?";
         jdbcTemplate.getJdbcTemplate().update(sql, id1, id2, confirmed, filterId1, filterId2);
     }
 
@@ -134,6 +134,7 @@ public class UserDbStorage implements UserStorage {
         return filmRows.next();
     }
 
+    @Override
     public void checkUser(Long id) {
         String sql = "SELECT * FROM USERS WHERE USER_ID = ?";
         List<User> result = jdbcTemplate.getJdbcTemplate().query(sql, userMapper, id);
@@ -145,7 +146,7 @@ public class UserDbStorage implements UserStorage {
     private void checkUser(List<User> users) {
         Set<Long> ids = users.stream().map(AbstractModel::getId).collect(Collectors.toSet());
         String sql =
-                "SELECT COUNT(*) AS COUNT FROM USERS u WHERE u.USER_ID IN (:ids)";
+            "SELECT COUNT(*) AS COUNT FROM USERS u WHERE u.USER_ID IN (:ids)";
         SqlParameterSource parameters = new MapSqlParameterSource("ids", ids);
         SqlRowSet result = jdbcTemplate.queryForRowSet(sql, parameters);
         if (result.next()) {
@@ -159,11 +160,11 @@ public class UserDbStorage implements UserStorage {
     private void readFriends(User user) {
         checkUser(user.getId());
         String sql =
-                "(SELECT USER_ID2 ID FROM FRIENDSHIP  WHERE USER_ID1 = ?) " +
-                        "UNION " +
-                        "(SELECT USER_ID1 ID FROM FRIENDSHIP  WHERE USER_ID2 = ? AND  IS_CONFIRMED = true)";
+            "(SELECT USER_ID2 ID FROM FRIENDSHIP  WHERE USER_ID1 = ?) " +
+                "UNION " +
+                "(SELECT USER_ID1 ID FROM FRIENDSHIP  WHERE USER_ID2 = ? AND  IS_CONFIRMED = true)";
         List<Long> friends = jdbcTemplate.getJdbcTemplate().queryForList(sql, Long.class,
-                user.getId(), user.getId());
+            user.getId(), user.getId());
         user.getFriends().clear();
         for (Long id : friends) {
             user.getFriends().add(id);
@@ -177,18 +178,18 @@ public class UserDbStorage implements UserStorage {
         parameterSource.addValue("id1", ids);
         parameterSource.addValue("id2", ids);
         String sql =
-                "(SELECT USER_ID2 FRIEND_ID, USER_ID1 USER_ID FROM FRIENDSHIP  WHERE USER_ID1 IN (:id1)) " +
-                        "UNION " +
-                        "(SELECT USER_ID1 FRIEND_ID, USER_ID1 USER_ID FROM FRIENDSHIP " +
-                        "WHERE USER_ID2 IN (:id2) AND  IS_CONFIRMED = true)";
+            "(SELECT USER_ID2 FRIEND_ID, USER_ID1 USER_ID FROM FRIENDSHIP  WHERE USER_ID1 IN (:id1)) " +
+                "UNION " +
+                "(SELECT USER_ID1 FRIEND_ID, USER_ID1 USER_ID FROM FRIENDSHIP " +
+                "WHERE USER_ID2 IN (:id2) AND  IS_CONFIRMED = true)";
         SqlRowSet sqlRowSet = jdbcTemplate.queryForRowSet(sql, parameterSource);
         while (sqlRowSet.next()) {
             users.stream()
-                    .filter(user -> user.getId().equals(sqlRowSet.getLong("USER_ID")))
-                    .findFirst()
-                    .ifPresentOrElse(user -> user.getFriends().add(sqlRowSet.getLong("FRIEND_ID")),
-                            () -> {
-                            });
+                .filter(user -> user.getId().equals(sqlRowSet.getLong("USER_ID")))
+                .findFirst()
+                .ifPresentOrElse(user -> user.getFriends().add(sqlRowSet.getLong("FRIEND_ID")),
+                    () -> {
+                    });
         }
     }
 
@@ -210,11 +211,11 @@ public class UserDbStorage implements UserStorage {
         SqlRowSet sqlRowSet = jdbcTemplate.queryForRowSet(sql, parameterSource);
         while (sqlRowSet.next()) {
             users.stream()
-                    .filter(user -> user.getId().equals(sqlRowSet.getLong("USER_ID")))
-                    .findFirst()
-                    .ifPresentOrElse(user -> user.getLikes().add(sqlRowSet.getLong("FILM_ID")),
-                            () -> {
-                            });
+                .filter(user -> user.getId().equals(sqlRowSet.getLong("USER_ID")))
+                .findFirst()
+                .ifPresentOrElse(user -> user.getLikes().add(sqlRowSet.getLong("FILM_ID")),
+                    () -> {
+                    });
         }
     }
 
