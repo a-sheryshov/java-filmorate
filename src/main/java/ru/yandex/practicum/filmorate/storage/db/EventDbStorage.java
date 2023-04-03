@@ -38,11 +38,11 @@ public class EventDbStorage implements EventStorage {
     }
 
     @Override
-    public List<Event> read(Set<Long> idSet) {
-        SqlParameterSource parameters = new MapSqlParameterSource("ids", idSet);
-        String sql = "SELECT * FROM EVENTS WHERE USER_ID IN (:ids) ORDER BY EVENT_ID DESC";
+    public List<Event> read(Set<Long> userId) {
+        SqlParameterSource parameters = new MapSqlParameterSource("ids", userId);
+        String sql = "SELECT * FROM EVENTS WHERE USER_ID IN (:ids) ORDER BY EVENT_ID ASC";
         List<Event> events = jdbcTemplate.query(sql, parameters, eventMapper);
-        log.info("Найдено {} событий у пользователя с ID: {}", events.size(), idSet);
+        log.info("Найдено {} событий у пользователя с ID: {}", events.size(), userId);
         return events;
     }
 
@@ -89,45 +89,3 @@ public class EventDbStorage implements EventStorage {
     }
 
 }
-
-//    private final EventMapper eventMapper = new EventMapper();
-
-//        String sql = "SELECT * FROM GENRES WHERE GENRE_ID = ?";
-//        List<Genre> result = jdbcTemplate.getJdbcTemplate().query(sql, new GenreMapper(), id);
-//        if (result.isEmpty()) {
-//            throw new ObjectNotFoundException("Genre not found");
-//        }
-//        return result.get(0);
-
-
-//    public void createEvent(Long userId, EventValue eventType, OperationValue operation, Long entityId) {
-//
-//        Event event = new Event();
-//        event.setTimestamp(new Date().getTime());
-//        event.setUserId(userId);
-//        event.setEventType(eventType);
-//        event.setOperation(operation);
-//        event.setEntityId(entityId);
-//        System.out.println(event + "!!!!!!!!!!!!!!!!!!!!!creaate");
-//
-//        Map<String, Object> values = new HashMap<>();
-//        values.put("EVENT_TIMESTAMP", new Date().getTime());
-//        values.put("USER_ID", userId);
-//        values.put("EVENT_TYPE", eventType.toString());
-//        values.put("OPERATION", operation.toString());
-//        values.put("ENTITY_ID", entityId);
-//
-//        SimpleJdbcInsert simpleJdbcInsert = new SimpleJdbcInsert(jdbcTemplate)
-//                .withTableName("events")
-//                .usingGeneratedKeyColumns("event_id");
-//
-//        long ev = simpleJdbcInsert.executeAndReturnKey(values).longValue();
-//        log.info("event add {}", ev);
-//    }
-//
-//    public List<Event> getEvent(Long id) {
-//        String sql = "SELECT * FROM EVENTS WHERE USER_ID = ? ORDER BY EVENT_TIMESTAMP DESC";
-//        List<Event> events = jdbcTemplate.query(sql, eventMapper, id);
-//        System.out.println(events);
-//        return events;
-//    }

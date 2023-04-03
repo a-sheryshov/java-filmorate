@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
 import javax.validation.constraints.NotNull;
@@ -7,7 +8,7 @@ import javax.validation.constraints.NotNull;
 @Getter
 @Setter
 @AllArgsConstructor
-@RequiredArgsConstructor
+@NoArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 @ToString
 public class Event extends AbstractModel {
@@ -17,10 +18,16 @@ public class Event extends AbstractModel {
     @NotNull
     private long userId;
     @NotNull
-    private EventValue eventType;//   LIKE, REVIEW, FRIEND
+    private EventValue eventType;
     @NotNull
-    private OperationValue operation;//   REMOVE, ADD, UPDATE
+    private OperationValue operation;
     @NotNull
-    private long entityId;// идентификатор сущности, с которой произошло событие
+    private long entityId;
+
+    @Override
+    @JsonProperty("eventId")
+    public Long getId() {
+        return this.id;
+    }
 
 }

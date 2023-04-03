@@ -116,7 +116,7 @@ CREATE TABLE IF NOT EXISTS events
     event_timestamp bigint                              NOT NULL,
     user_id         bigint                              NOT NULL,
     event_type      ENUM ('LIKE', 'REVIEW', 'FRIEND')   NOT NULL,
-    operation       ENUM ('REMOVE', 'ADD', 'UPDATE') NOT NULL,
+    operation       ENUM ('REMOVE', 'ADD', 'UPDATE')    NOT NULL,
     entity_id       bigint                              NOT NULL,
     CONSTRAINT fk_events_user_id FOREIGN KEY (user_id) REFERENCES users (user_id) ON DELETE CASCADE
 );

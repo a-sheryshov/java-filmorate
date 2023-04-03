@@ -6,7 +6,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
-import ru.yandex.practicum.filmorate.model.*;
+import ru.yandex.practicum.filmorate.model.Event;
+import ru.yandex.practicum.filmorate.model.EventValue;
+import ru.yandex.practicum.filmorate.model.OperationValue;
+import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.time.LocalDate;
@@ -24,40 +27,42 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class EventDbStorageTest {
     private final EventDbStorage eventDbStorage;
     private final UserStorage userStorage;
-//    private final FilmDbStorage filmStorage;
 
     @Test
-    void create() {
+    void shouldCreateAndRead() {
         User user1 = getFirstTestUser();
         user1 = userStorage.create(user1);
         User user2 = getSecondTestUser();
         user2 = userStorage.create(user2);
-
-
 
         List<Event> event1 = eventDbStorage.read(Set.of(user1.getId()));
         assertTrue(event1.isEmpty());
         List<Event> event2 = eventDbStorage.read(Set.of(user2.getId()));
         assertTrue(event2.isEmpty());
 
-        eventDbStorage.create(new Event(new Date().getTime(), user1.getId(), EventValue.FRIEND, OperationValue.ADD, user2.getId()));
-        eventDbStorage.create(new Event(new Date().getTime(), user1.getId(), EventValue.REVIEW, OperationValue.UPDATE, 2));
-//
-        List<Event> events = eventDbStorage.readAll();
-        assertEquals(2, events.size());
-        System.out.println(events);
+        Event expectedEvent1 = eventDbStorage.create(new Event(
+                new Date().getTime(),user1.getId(),EventValue.FRIEND,OperationValue.ADD,user2.getId()));
 
-        Event e1 = eventDbStorage.read(2L);
-        assertEquals(2, e1.getId());
-        System.out.println(e1);
+        Event expectedEvent2 = eventDbStorage.create(new Event(
+                new Date().getTime(),user1.getId(),EventValue.FRIEND,OperationValue.REMOVE,user2.getId()));
 
-        List <Event>  e2 = eventDbStorage.read(Set.of(1L));
-        System.out.println(e2);
-        assertEquals(2, e1.getEntityId());
-//        userStorage.createEvent();
-//        userStorage.getEvent();
-//        assertEquals(firstExpectedUser, firstActual);
-//        assertEquals(firstExpectedUser, firstActual);
+        event1 = eventDbStorage.read(Set.of(user1.getId()));
+        assertEquals(2, event1.size());
+        event2 = eventDbStorage.read(Set.of(user2.getId()));
+        assertTrue(event2.isEmpty());
+
+        List<Event> allEvents = eventDbStorage.readAll();
+        assertEquals(2, allEvents.size());
+        System.out.println(allEvents);
+
+        Event readEvent = eventDbStorage.read(2L);
+        assertEquals(2, readEvent.getId());
+        System.out.println(readEvent);
+
+        List<Event> eventsForUser1 = eventDbStorage.read(Set.of(user1.getId()));
+        System.out.println(eventsForUser1);
+        assertEquals(expectedEvent1, eventsForUser1.get(0));
+        assertEquals(expectedEvent2, eventsForUser1.get(1));
     }
 
     private User getFirstTestUser() {
@@ -76,39 +81,6 @@ class EventDbStorageTest {
         user.setName("User Second");
         user.setBirthday(LocalDate.of(1988, 8, 8));
         return user;
-    }
-
-    private Film getFirstTestFilm() {
-        Film film = new Film();
-        film.setId(1L);
-        film.setName("Film1");
-        film.setDescription("DESCRIPTION1");
-        film.setReleaseDate(LocalDate.of(2022, 2, 22));
-        film.setDuration(100);
-
-        Rating rating = new Rating();
-        rating.setId(1L);
-        film.setMpa(rating);
-
-        Genre genre1 = new Genre();
-        genre1.setId(1L);
-        Genre genre2 = new Genre();
-        genre2.setId(2L);
-        film.setGenres(Set.of(genre1, genre2));
-        return film;
-    }
-
-    private Film getSecondTestFilm() {
-        Film film = new Film();
-        film.setId(2L);
-        film.setName("Film2");
-        film.setDescription("DESCRIPTION");
-        film.setReleaseDate(LocalDate.of(2011, 1, 11));
-        film.setDuration(88);
-        Rating rating = new Rating();
-        rating.setId(2L);
-        film.setMpa(rating);
-        return film;
     }
 
 }
