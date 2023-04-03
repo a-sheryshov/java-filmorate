@@ -381,57 +381,8 @@ public class FilmDbStorage implements FilmStorage {
         return result;
     }
 
-//    @Override
-//    public List<Film> searchFilms(String query, String by) {
-////        boolean byName = false;
-////        boolean byDirector = false;
-////        if (by != null) {
-////            String[] values = by.split(",");
-////            for (String value : values) {
-////                if (value.equals("title")) {
-////                    byName = true;
-////                } else if (value.equals("director")) {
-////                    byDirector = true;
-////                }
-////            }
-////        }
-//
-//        String[] strings = by.split(",");
-//        query = "%" + query + "%";
-//        String param1 = "'" + strings[0] + "'";
-//        String param2 = "'" + strings[1] + "'";
-//
-//
-//        String sql = String.format("SELECT f.FILM_ID, f.NAME, f.DESCRIPTION, f.RELEASE_DATE, f.DURATION," +
-//                "f.RATING_ID, r.NAME R_NAME " +
-//                "FROM FILMS f " +
-//                "INNER JOIN RATINGS r ON f.RATING_ID = r.RATING_ID " +
-//                "RIGHT OUTER JOIN FILMS_DIRECTORS AS fd ON f.FILM_ID = fd.FILM_ID " +
-//                "INNER JOIN DIRECTORS d ON fd.DIRECTOR_ID = d.DIRECTOR_ID " +
-//                "WHERE (%s = f.NAME AND f.NAME LIKE %s) OR (%s = d.NAME AND d.NAME LIKE %s) " +
-//                "ORDER BY f.RELEASE_DATE", param1, query, param2, query);
-//
-
-//        MapSqlParameterSource parameterSource = new MapSqlParameterSource()
-//                .addValue("query", "%" + query + "%")
-//                .addValue("byname", byName)
-//                .addValue("bydirector", byDirector);
-
-//        List<Film> result = jdbcTemplate.query(sql, filmMapper);
-//        readGenres(result);
-//        readLikes(result);
-//        readDirectors(result);
-//        return result;
-//    }
    @Override
     public List<Film> search(String query, String by) {
-//        String sql = "SELECT f.*, r.NAME AS r_name" +
-//                " FROM FILMS f" +
-//                " LEFT JOIN FILM_DIRECTORS FD on f.ID = FD.FILM_ID" +
-//                " LEFT JOIN DIRECTORS D on D.DIRECTOR_ID = FD.DIRECTOR_ID" +
-//                " LEFT JOIN RATINGS r ON f.RATING_ID = r.ID" +
-//                " LEFT JOIN FILM_GENRES fg ON f.FILM_ID = fg.FILM_ID" +
-//                " WHERE " + getWhereClause(query, by);
        String sql = "SELECT f.*, m.NAME AS r_name, g.GENRE_ID AS genre_id, g.NAME AS genre_name" +
                " FROM FILMS f" +
                "    LEFT JOIN (SELECT COUNT(USER_ID) AS likes, FILM_ID" +
@@ -474,7 +425,8 @@ public class FilmDbStorage implements FilmStorage {
                 film.setDescription(rs.getString("description"));
                 film.setDuration(rs.getInt("duration"));
                 film.setReleaseDate((rs.getDate("release_date")).toLocalDate());
-                film.setMpa(new Rating(rs.getLong("rating_id"), rs.getString("name")));
+                film.setMpa(new Rating(rs.getLong("rating_id"), rs.getString("r_name")));
+                readDirectors(film);
                 films.put(id, film);
             }
             String genreName = rs.getString("genre_name");
