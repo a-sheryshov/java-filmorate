@@ -31,27 +31,32 @@ public class EventDbStorage implements EventStorage {
         String sql = "SELECT * FROM EVENTS WHERE EVENT_ID = ?";
         List<Event> result = jdbcTemplate.getJdbcTemplate().query(sql, eventMapper, eventId);
         if (result.isEmpty()) {
-            throw new ObjectNotFoundException("Event not found");
+            throw new ObjectNotFoundException("Event " + eventId + " not found");
         }
-        log.info("Найдено событие с ID: {}", eventId);
         return result.get(0);
     }
 
     @Override
-    public List<Event> read(Set<Long> userId) {
-        SqlParameterSource parameters = new MapSqlParameterSource("ids", userId);
-        String sql = "SELECT * FROM EVENTS WHERE USER_ID IN (:ids) ORDER BY EVENT_ID ASC";
-        List<Event> events = jdbcTemplate.query(sql, parameters, eventMapper);
-        log.info("Найдено {} событий у пользователя с ID: {}", events.size(), userId);
-        return events;
+    public List<Event> read(Set<Long> eventIds) {
+        String sql = "SELECT * FROM EVENTS WHERE EVENT_ID IN (:ids)";
+        SqlParameterSource parameterSource = new MapSqlParameterSource("ids", eventIds);
+        List<Event> result = jdbcTemplate.query(sql, parameterSource, eventMapper);
+        if (result.isEmpty()) {
+            throw new ObjectNotFoundException("No events found");
+        }
+        return result;
+    }
+
+    public List<Event> readByUser(Long userId) {
+        SqlParameterSource parameters = new MapSqlParameterSource("id", userId);
+        String sql = "SELECT * FROM EVENTS WHERE USER_ID = :id ORDER BY EVENT_ID ASC";
+        return jdbcTemplate.query(sql, parameters, eventMapper);
     }
 
     @Override
     public List<Event> readAll() {
         String sql = "SELECT * FROM EVENTS ORDER BY EVENT_ID";
-        List<Event> events = jdbcTemplate.query(sql, eventMapper);
-        log.info("Всего событий: {}", events.size());
-        return events;
+        return jdbcTemplate.query(sql, eventMapper);
     }
 
     @Override
@@ -68,7 +73,7 @@ public class EventDbStorage implements EventStorage {
                 .usingGeneratedKeyColumns("event_id");
 
         event.setId(simpleJdbcInsert.executeAndReturnKey(values).longValue());
-        log.info("event add {}", event);
+        log.info("Event of user {} action {} created by id {}", event.getUserId(), event.getOperation(), event.getId());
         return event;
     }
 

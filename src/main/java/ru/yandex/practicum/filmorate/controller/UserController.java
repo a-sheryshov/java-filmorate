@@ -42,8 +42,8 @@ public class UserController extends AbstractModelController<User, UserService> {
     }
 
     @GetMapping("/{id}/feed")
-    public List<Event> getEvent(@PathVariable Long id) {
-        return service.getEvent(id);
+    public List<Event> getEvents(@PathVariable Long id) {
+        return service.getEventsByUser(id);
     }
 
 }

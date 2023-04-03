@@ -15,7 +15,6 @@ import ru.yandex.practicum.filmorate.storage.UserStorage;
 import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
-import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -35,9 +34,9 @@ class EventDbStorageTest {
         User user2 = getSecondTestUser();
         user2 = userStorage.create(user2);
 
-        List<Event> event1 = eventDbStorage.read(Set.of(user1.getId()));
+        List<Event> event1 = eventDbStorage.readByUser(user1.getId());
         assertTrue(event1.isEmpty());
-        List<Event> event2 = eventDbStorage.read(Set.of(user2.getId()));
+        List<Event> event2 = eventDbStorage.readByUser(user2.getId());
         assertTrue(event2.isEmpty());
 
         Event expectedEvent1 = eventDbStorage.create(new Event(
@@ -46,9 +45,9 @@ class EventDbStorageTest {
         Event expectedEvent2 = eventDbStorage.create(new Event(
                 new Date().getTime(),user1.getId(),EventValue.FRIEND,OperationValue.REMOVE,user2.getId()));
 
-        event1 = eventDbStorage.read(Set.of(user1.getId()));
+        event1 = eventDbStorage.readByUser(user1.getId());
         assertEquals(2, event1.size());
-        event2 = eventDbStorage.read(Set.of(user2.getId()));
+        event2 = eventDbStorage.readByUser(user2.getId());
         assertTrue(event2.isEmpty());
 
         List<Event> allEvents = eventDbStorage.readAll();
@@ -59,7 +58,7 @@ class EventDbStorageTest {
         assertEquals(2, readEvent.getId());
         System.out.println(readEvent);
 
-        List<Event> eventsForUser1 = eventDbStorage.read(Set.of(user1.getId()));
+        List<Event> eventsForUser1 = eventDbStorage.readByUser(user1.getId());
         System.out.println(eventsForUser1);
         assertEquals(expectedEvent1, eventsForUser1.get(0));
         assertEquals(expectedEvent2, eventsForUser1.get(1));

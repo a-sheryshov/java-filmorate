@@ -115,9 +115,11 @@ public class UserService extends AbstractModelService<User, UserStorage> {
         log.info("User with id {} is deleted", userId);
     }
 
-    public List<Event> getEvent(Long id) {
+    public List<Event> getEventsByUser(Long id) {
         storage.read(id);
-        return eventStorage.read(Set.of(id));
+        List<Event> result = eventStorage.readByUser(id);
+        log.info("User {} events read", id);
+        return result;
     }
 
 }
