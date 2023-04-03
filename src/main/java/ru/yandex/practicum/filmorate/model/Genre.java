@@ -14,9 +14,8 @@ public class Genre extends AbstractModel {
     @Size(max = 30)
     private String name = "";
 
-    public Genre(Long id) {
+    public Genre(Long id, String genreName) {
         this.id = id;
-        this.name = "";
+        this.name = genreName;
     }
-
 }

@@ -15,13 +15,11 @@ import ru.yandex.practicum.filmorate.exception.ObjectNotFoundException;
 import ru.yandex.practicum.filmorate.exception.WrongParameterException;
 import ru.yandex.practicum.filmorate.mapper.FilmMapper;
 import ru.yandex.practicum.filmorate.mapper.GenreMapper;
-import ru.yandex.practicum.filmorate.model.AbstractModel;
-import ru.yandex.practicum.filmorate.model.Director;
-import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.*;
 import ru.yandex.practicum.filmorate.storage.DirectorStorage;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
+import javax.validation.ValidationException;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.*;
@@ -36,7 +34,6 @@ public class FilmDbStorage implements FilmStorage {
     private final FilmMapper filmMapper;
     private final GenreMapper genreMapper;
     private final DirectorStorage directorStorage;
-
 
     @Override
     public Film read(Long id) {
@@ -385,73 +382,106 @@ public class FilmDbStorage implements FilmStorage {
     }
 
 //    @Override
-//    public List<Film> searchFilmsByTitle(String title) {
-//        String sql = "SELECT f.FILM_ID, f.NAME, f.DESCRIPTION, f.RELEASE_DATE, f.DURATION, " +
-//                "f.RATING_ID, r.NAME R_NAME " +
-//                "FROM FILMS f " +
-//                "JOIN RATINGS r ON f.RATING_ID = r.RATING_ID " +
-//                "WHERE f.NAME LIKE :title " +
-//                "ORDER BY f.RELEASE_DATE";
-//        MapSqlParameterSource parameterSource = new MapSqlParameterSource()
-//                .addValue("title", "%" + title + "%");
-//        List<Film> result = jdbcTemplate.query(sql, parameterSource, filmMapper);
-//        readGenres(result);
-//        readLikes(result);
-//        readDirectors(result);
-//        return result;
-//    }
+//    public List<Film> searchFilms(String query, String by) {
+////        boolean byName = false;
+////        boolean byDirector = false;
+////        if (by != null) {
+////            String[] values = by.split(",");
+////            for (String value : values) {
+////                if (value.equals("title")) {
+////                    byName = true;
+////                } else if (value.equals("director")) {
+////                    byDirector = true;
+////                }
+////            }
+////        }
 //
-//    @Override
-//    public List<Film> searchFilmsByDirector(String director) {
-//        String sql = "SELECT f.FILM_ID, f.NAME, f.DESCRIPTION, f.RELEASE_DATE, f.DURATION, " +
+//        String[] strings = by.split(",");
+//        query = "%" + query + "%";
+//        String param1 = "'" + strings[0] + "'";
+//        String param2 = "'" + strings[1] + "'";
+//
+//
+//        String sql = String.format("SELECT f.FILM_ID, f.NAME, f.DESCRIPTION, f.RELEASE_DATE, f.DURATION," +
 //                "f.RATING_ID, r.NAME R_NAME " +
 //                "FROM FILMS f " +
-//                "JOIN RATINGS r ON f.RATING_ID = r.RATING_ID " +
+//                "INNER JOIN RATINGS r ON f.RATING_ID = r.RATING_ID " +
 //                "RIGHT OUTER JOIN FILMS_DIRECTORS AS fd ON f.FILM_ID = fd.FILM_ID " +
-//                "JOIN DIRECTORS d ON fd.DIRECTOR_ID = d.DIRECTOR_ID " +
-//                "WHERE d.NAME LIKE :director " +
-//                "ORDER BY f.RELEASE_DATE";
+//                "INNER JOIN DIRECTORS d ON fd.DIRECTOR_ID = d.DIRECTOR_ID " +
+//                "WHERE (%s = f.NAME AND f.NAME LIKE %s) OR (%s = d.NAME AND d.NAME LIKE %s) " +
+//                "ORDER BY f.RELEASE_DATE", param1, query, param2, query);
+//
+
 //        MapSqlParameterSource parameterSource = new MapSqlParameterSource()
-//                .addValue("director", "%" + director + "%");
-//        List<Film> result = jdbcTemplate.query(sql, parameterSource, filmMapper);
+//                .addValue("query", "%" + query + "%")
+//                .addValue("byname", byName)
+//                .addValue("bydirector", byDirector);
+
+//        List<Film> result = jdbcTemplate.query(sql, filmMapper);
 //        readGenres(result);
 //        readLikes(result);
 //        readDirectors(result);
 //        return result;
 //    }
+   @Override
+    public List<Film> search(String query, String by) {
+//        String sql = "SELECT f.*, r.NAME AS r_name" +
+//                " FROM FILMS f" +
+//                " LEFT JOIN FILM_DIRECTORS FD on f.ID = FD.FILM_ID" +
+//                " LEFT JOIN DIRECTORS D on D.DIRECTOR_ID = FD.DIRECTOR_ID" +
+//                " LEFT JOIN RATINGS r ON f.RATING_ID = r.ID" +
+//                " LEFT JOIN FILM_GENRES fg ON f.FILM_ID = fg.FILM_ID" +
+//                " WHERE " + getWhereClause(query, by);
+       String sql = "SELECT f.*, m.NAME AS r_name, g.GENRE_ID AS genre_id, g.NAME AS genre_name" +
+               " FROM FILMS f" +
+               "    LEFT JOIN (SELECT COUNT(USER_ID) AS likes, FILM_ID" +
+               "        FROM FILMS_LIKES" +
+               "        GROUP BY FILM_ID) l on f.FILM_ID = l.FILM_ID" +
+               "    LEFT JOIN FILMS_DIRECTORS FD on f.FILM_ID = FD.FILM_ID" +
+               "    LEFT JOIN DIRECTORS D on D.DIRECTOR_ID = FD.DIRECTOR_ID" +
+               "    LEFT JOIN RATINGS m ON f.RATING_ID = m.RATING_ID" +
+               "    LEFT JOIN FILMS_GENRES fg ON f.FILM_ID = fg.FILM_ID" +
+               "    LEFT JOIN GENRES g ON fg.GENRE_ID = g.GENRE_ID" +
+               " WHERE " + getWhereClause(query, by) +
+               " ORDER BY l.likes DESC;";
+        return getFilms(sql);
+    }
 
-    @Override
-    public List<Film> searchFilms(String query, String by) {
-        String sql = "SELECT f.FILM_ID, f.NAME, f.DESCRIPTION, f.RELEASE_DATE, f.DURATION, " +
-                "f.RATING_ID, r.NAME R_NAME " +
-                "FROM FILMS f " +
-                "JOIN RATINGS r ON f.RATING_ID = r.RATING_ID " +
-                "RIGHT OUTER JOIN FILMS_DIRECTORS AS fd ON f.FILM_ID = fd.FILM_ID " +
-                "JOIN DIRECTORS d ON fd.DIRECTOR_ID = d.DIRECTOR_ID " +
-                "WHERE (:byname = true AND f.NAME LIKE :query) OR (:bydirector = true AND d.NAME LIKE :query) " +
-                "ORDER BY f.RELEASE_DATE";
-
-        boolean byName = false;
-        boolean byDirector = false;
-        if (by != null) {
-            String[] values = by.split(",");
-            for (String value : values) {
-                if (value.equals("title")) {
-                    byName = true;
-                } else if (value.equals("director")) {
-                    byDirector = true;
-                }
-            }
+    private String getWhereClause(String query, String by) {
+        Set<String> lowercaseBy = Arrays.stream(by.split(","))
+                .map(String::toLowerCase)
+                .collect(Collectors.toSet());
+        Map<String, String> clauseMapper = Map.of(
+                "director", "LOWER(d.NAME) LIKE LOWER('%" + query + "%')",
+                "title", "LOWER(f.NAME) LIKE LOWER('%" + query + "%')"
+        );
+        if (!clauseMapper.keySet().containsAll(lowercaseBy)) {
+            throw new ValidationException("This search type is not supported: " + lowercaseBy);
         }
+        return lowercaseBy.stream()
+                .map(clauseMapper::get)
+                .collect(Collectors.joining(" OR "));
+    }
 
-        MapSqlParameterSource parameterSource = new MapSqlParameterSource()
-                .addValue("query", "%" + query + "%")
-                .addValue("byname", byName)
-                .addValue("bydirector", byDirector);
-        List<Film> result = jdbcTemplate.query(sql, parameterSource, filmMapper);
-        readGenres(result);
-        readLikes(result);
-        readDirectors(result);
-        return result;
+    private List<Film> getFilms(String query) {
+        Map<Long, Film> films = new LinkedHashMap<>();
+        jdbcTemplate.query(query, rs -> {
+            long id = rs.getLong("film_id");
+            if (!films.containsKey(id)) {
+                Film film = new Film();
+                film.setId(id);
+                film.setName(rs.getString("name"));
+                film.setDescription(rs.getString("description"));
+                film.setDuration(rs.getInt("duration"));
+                film.setReleaseDate((rs.getDate("release_date")).toLocalDate());
+                film.setMpa(new Rating(rs.getLong("rating_id"), rs.getString("name")));
+                films.put(id, film);
+            }
+            String genreName = rs.getString("genre_name");
+            if (genreName != null) {
+                films.get(id).setGenres(Set.of(new Genre(rs.getLong("genre_id"), genreName)));
+            }
+        });
+        return new ArrayList<>(films.values());
     }
 }

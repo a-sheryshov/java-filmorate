@@ -10,6 +10,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/films")
 public class FilmController extends AbstractModelController<Film, FilmService> {
+
     @Autowired
     public FilmController(FilmService service) {
         super(service);

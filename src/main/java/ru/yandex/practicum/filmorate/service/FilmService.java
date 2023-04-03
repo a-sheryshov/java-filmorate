@@ -16,6 +16,8 @@ import java.util.List;
 public class FilmService extends AbstractModelService<Film, FilmStorage> {
     private final UserService userService;
 
+
+
     @Autowired
     public FilmService(FilmStorage storage, UserService userService) {
         super(storage);
@@ -53,11 +55,11 @@ public class FilmService extends AbstractModelService<Film, FilmStorage> {
     }
 
     public List<Film> searchFilms(String query, String by) {
-        storage.searchFilms(query, by);
-        List<Film> film = storage.searchFilms(query, by);
+        List<Film> film = storage.search(query, by);
         log.info("Request search films, query = {}, by = {}", query, by);
         return film;
     }
+
 }
 
 
