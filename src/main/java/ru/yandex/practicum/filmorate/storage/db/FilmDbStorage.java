@@ -395,7 +395,11 @@ public class FilmDbStorage implements FilmStorage {
                "    LEFT JOIN GENRES g ON fg.GENRE_ID = g.GENRE_ID" +
                " WHERE " + getWhereClause(query, by) +
                " ORDER BY l.likes DESC;";
-        return getFilms(sql);
+       List<Film> result = jdbcTemplate.query(sql, filmMapper);
+       readLikes(result);
+       readGenres(result);
+       readDirectors(result);
+       return result;
     }
 
     private String getWhereClause(String query, String by) {
@@ -414,26 +418,4 @@ public class FilmDbStorage implements FilmStorage {
                 .collect(Collectors.joining(" OR "));
     }
 
-    private List<Film> getFilms(String query) {
-        Map<Long, Film> films = new LinkedHashMap<>();
-        jdbcTemplate.query(query, rs -> {
-            long id = rs.getLong("film_id");
-            if (!films.containsKey(id)) {
-                Film film = new Film();
-                film.setId(id);
-                film.setName(rs.getString("name"));
-                film.setDescription(rs.getString("description"));
-                film.setDuration(rs.getInt("duration"));
-                film.setReleaseDate((rs.getDate("release_date")).toLocalDate());
-                film.setMpa(new Rating(rs.getLong("rating_id"), rs.getString("r_name")));
-                readDirectors(film);
-                films.put(id, film);
-            }
-            String genreName = rs.getString("genre_name");
-            if (genreName != null) {
-                films.get(id).setGenres(Set.of(new Genre(rs.getLong("genre_id"), genreName)));
-            }
-        });
-        return new ArrayList<>(films.values());
-    }
 }
