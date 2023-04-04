@@ -22,6 +22,8 @@ public class FilmService extends AbstractModelService<Film, FilmStorage> {
     private final UserService userService;
     private final EventStorage eventStorage;
 
+
+
     @Autowired
     public FilmService(FilmStorage storage, UserService userService, EventStorage eventStorage) {
         super(storage);
@@ -61,5 +63,12 @@ public class FilmService extends AbstractModelService<Film, FilmStorage> {
         return storage.readByDirector(directorId, sortBy);
     }
 
+    public List<Film> searchFilms(String query, String by) {
+        List<Film> film = storage.search(query, by);
+        log.info("Request search films, query = {}, by = {}", query, by);
+        return film;
+    }
+
 }
+
 

@@ -15,13 +15,11 @@ import ru.yandex.practicum.filmorate.exception.ObjectNotFoundException;
 import ru.yandex.practicum.filmorate.exception.WrongParameterException;
 import ru.yandex.practicum.filmorate.mapper.FilmMapper;
 import ru.yandex.practicum.filmorate.mapper.GenreMapper;
-import ru.yandex.practicum.filmorate.model.AbstractModel;
-import ru.yandex.practicum.filmorate.model.Director;
-import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.*;
 import ru.yandex.practicum.filmorate.storage.DirectorStorage;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
+import javax.validation.ValidationException;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.*;
@@ -36,7 +34,6 @@ public class FilmDbStorage implements FilmStorage {
     private final FilmMapper filmMapper;
     private final GenreMapper genreMapper;
     private final DirectorStorage directorStorage;
-
 
     @Override
     public Film read(Long id) {
@@ -382,6 +379,43 @@ public class FilmDbStorage implements FilmStorage {
         readLikes(result);
         readDirectors(result);
         return result;
+    }
+
+   @Override
+    public List<Film> search(String query, String by) {
+       String sql = "SELECT f.*, m.NAME AS r_name, g.GENRE_ID AS genre_id, g.NAME AS genre_name" +
+               " FROM FILMS f" +
+               "    LEFT JOIN (SELECT COUNT(USER_ID) AS likes, FILM_ID" +
+               "        FROM FILMS_LIKES" +
+               "        GROUP BY FILM_ID) l on f.FILM_ID = l.FILM_ID" +
+               "    LEFT JOIN FILMS_DIRECTORS FD on f.FILM_ID = FD.FILM_ID" +
+               "    LEFT JOIN DIRECTORS D on D.DIRECTOR_ID = FD.DIRECTOR_ID" +
+               "    LEFT JOIN RATINGS m ON f.RATING_ID = m.RATING_ID" +
+               "    LEFT JOIN FILMS_GENRES fg ON f.FILM_ID = fg.FILM_ID" +
+               "    LEFT JOIN GENRES g ON fg.GENRE_ID = g.GENRE_ID" +
+               " WHERE " + getWhereClause(query, by) +
+               " ORDER BY l.likes DESC;";
+       List<Film> result = jdbcTemplate.query(sql, filmMapper);
+       readLikes(result);
+       readGenres(result);
+       readDirectors(result);
+       return result;
+    }
+
+    private String getWhereClause(String query, String by) {
+        Set<String> lowercaseBy = Arrays.stream(by.split(","))
+                .map(String::toLowerCase)
+                .collect(Collectors.toSet());
+        Map<String, String> clauseMapper = Map.of(
+                "director", "LOWER(d.NAME) LIKE LOWER('%" + query + "%')",
+                "title", "LOWER(f.NAME) LIKE LOWER('%" + query + "%')"
+        );
+        if (!clauseMapper.keySet().containsAll(lowercaseBy)) {
+            throw new ValidationException("This search type is not supported: " + lowercaseBy);
+        }
+        return lowercaseBy.stream()
+                .map(clauseMapper::get)
+                .collect(Collectors.joining(" OR "));
     }
 
 }

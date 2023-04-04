@@ -10,6 +10,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/films")
 public class FilmController extends AbstractModelController<Film, FilmService> {
+
     @Autowired
     public FilmController(FilmService service) {
         super(service);
@@ -40,5 +41,10 @@ public class FilmController extends AbstractModelController<Film, FilmService> {
     @GetMapping("/director/{directorId}")
     public List<Film> readFilmsByDirector(@PathVariable Long directorId, @RequestParam String sortBy) {
         return service.readByDirector(directorId, sortBy);
+    }
+
+    @GetMapping("/search")
+    public List<Film> searchFilms(@RequestParam("query") String query, @RequestParam("by") String by) {
+        return service.searchFilms(query, by);
     }
 }

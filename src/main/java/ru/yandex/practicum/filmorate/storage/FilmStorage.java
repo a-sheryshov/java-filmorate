@@ -16,4 +16,5 @@ public interface FilmStorage extends ModelStorage<Film> {
 
     List<Film> readByDirector(Long directorId, String sortBy);
 
+    List<Film> search(String query, String by);
 }
