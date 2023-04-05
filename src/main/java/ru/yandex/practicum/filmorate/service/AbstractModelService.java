@@ -35,5 +35,4 @@ public abstract class AbstractModelService<T extends AbstractModel, S extends Mo
     public List<T> readAll() {
         return storage.readAll();
     }
-
 }

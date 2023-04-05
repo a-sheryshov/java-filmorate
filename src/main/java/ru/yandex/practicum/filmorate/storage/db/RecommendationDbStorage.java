@@ -3,13 +3,22 @@ package ru.yandex.practicum.filmorate.storage.db;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+
+import org.springframework.jdbc.support.rowset.SqlRowSet;
+
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.RecommendationStorage;
 
+
 import javax.sql.DataSource;
 import java.sql.*;
 import java.util.*;
+
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 
 @Component
 @Slf4j
@@ -46,6 +55,7 @@ public class RecommendationDbStorage implements RecommendationStorage {
         } catch (SQLException e) {
             throw new RuntimeException("Failed to execute query: " + e.getMessage(), e);
         }
+
     }
 
     @Override

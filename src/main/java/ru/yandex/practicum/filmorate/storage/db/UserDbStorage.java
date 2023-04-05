@@ -15,7 +15,6 @@ import ru.yandex.practicum.filmorate.model.AbstractModel;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
-
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -24,6 +23,7 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public class UserDbStorage implements UserStorage {
     private final NamedParameterJdbcTemplate jdbcTemplate;
+
     private final UserMapper userMapper;
 
     @Override
@@ -134,6 +134,9 @@ public class UserDbStorage implements UserStorage {
         return filmRows.next();
     }
 
+
+    @Override
+
     public void checkUser(Long id) {
         String sql = "SELECT * FROM USERS WHERE USER_ID = ?";
         List<User> result = jdbcTemplate.getJdbcTemplate().query(sql, userMapper, id);
@@ -216,5 +219,14 @@ public class UserDbStorage implements UserStorage {
                             () -> {
                             });
         }
+    }
+
+    @Override
+    public void delete(Long userId) {
+
+        checkUser(userId);
+        String sql = "DELETE FROM USERS WHERE user_id = ?";
+
+        jdbcTemplate.getJdbcTemplate().update(sql, userId);
     }
 }

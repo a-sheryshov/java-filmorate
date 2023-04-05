@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.RecommendationStorage;
@@ -34,6 +35,6 @@ public class RecommendationService {
     private User getUserWithMostTotalLikes(Long userId) {
         Long userToRecommendationId = recommendationStorage.getUserIdWithMaxLikes(userId);
         if (userToRecommendationId == null) return null;
-        return userDbStorage.read(userToRecommendationId);
+        return userDbStorage.read(userToRecommendationId);   
     }
 }

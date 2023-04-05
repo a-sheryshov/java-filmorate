@@ -12,5 +12,4 @@ public class RatingService extends AbstractModelService<Rating, RatingStorage> i
     public RatingService(RatingStorage storage) {
         super(storage);
     }
-
 }

@@ -11,8 +11,10 @@ import ru.yandex.practicum.filmorate.entity.AppError;
 import ru.yandex.practicum.filmorate.entity.ErrorResponse;
 import ru.yandex.practicum.filmorate.entity.ValidationErrorResponse;
 import ru.yandex.practicum.filmorate.entity.Violation;
+import ru.yandex.practicum.filmorate.exception.DirectorAlreadyExistsException;
 import ru.yandex.practicum.filmorate.exception.ObjectNotFoundException;
 import ru.yandex.practicum.filmorate.exception.UserAlreadyExistsException;
+import ru.yandex.practicum.filmorate.exception.WrongParameterException;
 
 import javax.validation.ConstraintViolationException;
 import javax.validation.Path;
@@ -84,11 +86,32 @@ public class ErrorHandlingControllerAdvice {
         return new AppError(HttpStatus.NOT_FOUND.value(), e.getMessage());
     }
 
+    @ExceptionHandler(DirectorAlreadyExistsException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ResponseBody
+    public AppError onDirectorAlreadyExistsError(
+            ObjectNotFoundException e
+    ) {
+        log.error(e.getMessage());
+        return new AppError(HttpStatus.BAD_REQUEST.value(), e.getMessage());
+    }
+
+    @ExceptionHandler(WrongParameterException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ResponseBody
+    public AppError onWrongParameterError(
+            ObjectNotFoundException e
+    ) {
+        log.error(e.getMessage());
+        return new AppError(HttpStatus.BAD_REQUEST.value(), e.getMessage());
+    }
+
     @ExceptionHandler
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ErrorResponse handleThrowable(Throwable e) {
         e.printStackTrace();
-        return new ErrorResponse("Произошла непредвиденная ошибка.");
+        return new ErrorResponse("Unexpected error");
     }
+
 
 }
