@@ -46,6 +46,7 @@ public class RecommendationDbStorage implements RecommendationStorage {
         } catch (SQLException e) {
             throw new RuntimeException("Failed to execute query: " + e.getMessage(), e);
         }
+
     }
 
     @Override
