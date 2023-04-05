@@ -4,16 +4,12 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
-import org.springframework.jdbc.support.rowset.SqlRowSet;
-
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.RecommendationStorage;
 
-
 import javax.sql.DataSource;
 import java.sql.*;
-import java.util.*;
 
 import java.util.HashSet;
 import java.util.List;

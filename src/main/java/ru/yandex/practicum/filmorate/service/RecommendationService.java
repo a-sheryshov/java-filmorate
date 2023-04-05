@@ -35,6 +35,7 @@ public class RecommendationService {
     private User getUserWithMostTotalLikes(Long userId) {
         Long userToRecommendationId = recommendationStorage.getUserIdWithMaxLikes(userId);
         if (userToRecommendationId == null) return null;
-        return userDbStorage.read(userToRecommendationId);   
+        return userDbStorage.read(userToRecommendationId);
     }
+
 }
