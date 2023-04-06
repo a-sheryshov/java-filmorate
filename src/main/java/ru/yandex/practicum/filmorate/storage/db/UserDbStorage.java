@@ -134,7 +134,9 @@ public class UserDbStorage implements UserStorage {
         return filmRows.next();
     }
 
+
     @Override
+
     public void checkUser(Long id) {
         String sql = "SELECT * FROM USERS WHERE USER_ID = ?";
         List<User> result = jdbcTemplate.getJdbcTemplate().query(sql, userMapper, id);
