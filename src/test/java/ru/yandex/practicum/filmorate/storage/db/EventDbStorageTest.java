@@ -40,10 +40,10 @@ class EventDbStorageTest {
         assertTrue(event2.isEmpty());
 
         Event expectedEvent1 = eventDbStorage.create(new Event(
-                new Date().getTime(),user1.getId(),EventValue.FRIEND,OperationValue.ADD,user2.getId()));
+                new Date().getTime(), user1.getId(), EventValue.FRIEND, OperationValue.ADD, user2.getId()));
 
         Event expectedEvent2 = eventDbStorage.create(new Event(
-                new Date().getTime(),user1.getId(),EventValue.FRIEND,OperationValue.REMOVE,user2.getId()));
+                new Date().getTime(), user1.getId(), EventValue.FRIEND, OperationValue.REMOVE, user2.getId()));
 
         event1 = eventDbStorage.readByUser(user1.getId());
         assertEquals(2, event1.size());
@@ -52,14 +52,11 @@ class EventDbStorageTest {
 
         List<Event> allEvents = eventDbStorage.readAll();
         assertEquals(2, allEvents.size());
-        System.out.println(allEvents);
 
         Event readEvent = eventDbStorage.read(2L);
         assertEquals(2, readEvent.getId());
-        System.out.println(readEvent);
 
         List<Event> eventsForUser1 = eventDbStorage.readByUser(user1.getId());
-        System.out.println(eventsForUser1);
         assertEquals(expectedEvent1, eventsForUser1.get(0));
         assertEquals(expectedEvent2, eventsForUser1.get(1));
     }

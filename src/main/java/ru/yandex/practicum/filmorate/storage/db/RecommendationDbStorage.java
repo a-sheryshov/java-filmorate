@@ -3,14 +3,15 @@ package ru.yandex.practicum.filmorate.storage.db;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
-
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.RecommendationStorage;
 
 import javax.sql.DataSource;
-import java.sql.*;
-
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -20,9 +21,9 @@ import java.util.Set;
 @Slf4j
 @AllArgsConstructor
 public class RecommendationDbStorage implements RecommendationStorage {
+    DataSource dataSource;
     private NamedParameterJdbcTemplate jdbcTemplate;
     private FilmDbStorage filmDbStorage;
-    DataSource dataSource;
 
     public Long getUserIdWithMaxLikes(Long userId) {
         String sql = "SELECT user_id " +

@@ -23,7 +23,6 @@ public class FilmService extends AbstractModelService<Film, FilmStorage> {
     private final EventStorage eventStorage;
 
 
-
     @Autowired
     public FilmService(FilmStorage storage, UserService userService, EventStorage eventStorage) {
         super(storage);

@@ -90,7 +90,7 @@ public class ErrorHandlingControllerAdvice {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ResponseBody
     public AppError onDirectorAlreadyExistsError(
-            ObjectNotFoundException e
+            DirectorAlreadyExistsException e
     ) {
         log.error(e.getMessage());
         return new AppError(HttpStatus.BAD_REQUEST.value(), e.getMessage());
@@ -100,17 +100,17 @@ public class ErrorHandlingControllerAdvice {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ResponseBody
     public AppError onWrongParameterError(
-            ObjectNotFoundException e
+            WrongParameterException e
     ) {
         log.error(e.getMessage());
         return new AppError(HttpStatus.BAD_REQUEST.value(), e.getMessage());
     }
 
-    @ExceptionHandler
+    @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ErrorResponse handleThrowable(Throwable e) {
         e.printStackTrace();
-        return new ErrorResponse("Unexpected error");
+        return new ErrorResponse("Unknown exception");
     }
 
 

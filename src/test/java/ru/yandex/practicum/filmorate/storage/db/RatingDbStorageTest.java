@@ -11,7 +11,7 @@ import ru.yandex.practicum.filmorate.model.Rating;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @SpringBootTest
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
@@ -48,7 +48,7 @@ class RatingDbStorageTest {
         List<Rating> actual = ratingStorage.readAll();
         int i1 = actual.size() - 2;
         int i2 = actual.size() - 1;
-        assertEquals(firstExpected,  actual.get(i1));
+        assertEquals(firstExpected, actual.get(i1));
         assertEquals(secondExpected, actual.get(i2));
         assertEquals(recordCount, actual.size());
     }
@@ -59,8 +59,8 @@ class RatingDbStorageTest {
         Rating expected = getFirstTestRating(firstId);
         ratingStorage.create(expected);
         Rating actual = ratingStorage.read(expected.getId());
-        assertEquals(expected.getId(),actual.getId());
-        assertEquals(expected.getName(),actual.getName());
+        assertEquals(expected.getId(), actual.getId());
+        assertEquals(expected.getName(), actual.getName());
     }
 
     @Test

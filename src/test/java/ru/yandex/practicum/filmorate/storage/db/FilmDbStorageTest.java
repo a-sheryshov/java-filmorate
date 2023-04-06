@@ -14,11 +14,10 @@ import ru.yandex.practicum.filmorate.model.Rating;
 import ru.yandex.practicum.filmorate.storage.DirectorStorage;
 
 import java.time.LocalDate;
-
 import java.util.List;
 import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @SpringBootTest
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
@@ -81,13 +80,13 @@ class FilmDbStorageTest {
         Film expected = getFirstTestFilm();
         filmStorage.create(expected);
         Film actFilm = filmStorage.read(expected.getId());
-        assertEquals(expected.getId(),actFilm.getId());
-        assertEquals(expected.getName(),actFilm.getName());
-        assertEquals(expected.getDescription(),actFilm.getDescription());
-        assertEquals(expected.getReleaseDate(),actFilm.getReleaseDate());
-        assertEquals(expected.getDuration(),actFilm.getDuration());
-        assertEquals(expected.getMpa().getId(),actFilm.getMpa().getId());
-        assertEquals(expected.getGenres().size(),actFilm.getGenres().size());
+        assertEquals(expected.getId(), actFilm.getId());
+        assertEquals(expected.getName(), actFilm.getName());
+        assertEquals(expected.getDescription(), actFilm.getDescription());
+        assertEquals(expected.getReleaseDate(), actFilm.getReleaseDate());
+        assertEquals(expected.getDuration(), actFilm.getDuration());
+        assertEquals(expected.getMpa().getId(), actFilm.getMpa().getId());
+        assertEquals(expected.getGenres().size(), actFilm.getGenres().size());
         assertEquals(expected.getDirectors(), actFilm.getDirectors());
     }
 

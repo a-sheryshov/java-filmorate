@@ -20,7 +20,8 @@ public class Film extends AbstractModel {
     private static final LocalDate CINEMA_CREATION_DATE = LocalDate.parse(CINEMA_CREATION_DATE_STR);
     private static final String DESC_LEN_VALIDATION_ERR_MSG =
             "Description should be less than " + MAX_DESCRIPTION_LEN + " symbols";
-
+    @NotNull
+    private final Set<Long> likes = new HashSet<>();
     @NotBlank(message = "Name is mandatory")
     private String name;
     @Size(max = MAX_DESCRIPTION_LEN, message = DESC_LEN_VALIDATION_ERR_MSG)
@@ -33,8 +34,6 @@ public class Film extends AbstractModel {
     private Rating mpa = new Rating();
     @NotNull
     private Set<Genre> genres = new TreeSet<>(Comparator.comparing(g -> g.id));
-    @NotNull
-    private final Set<Long> likes = new HashSet<>();
     @NotNull
     private Set<Director> directors = new HashSet<>();
 

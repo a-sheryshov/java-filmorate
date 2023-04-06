@@ -19,9 +19,9 @@ import static org.junit.jupiter.api.Assertions.*;
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.ANY)
 class UserDbStorageTest {
-    private final UserDbStorage userStorage;
     private static final String EMAIL1 = "test1@test.test";
     private static final String EMAIL2 = "test2@test.test";
+    private final UserDbStorage userStorage;
 
     @Test
     void shouldReadCreatedUser() {
