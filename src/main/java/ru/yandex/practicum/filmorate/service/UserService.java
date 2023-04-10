@@ -4,7 +4,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
+import ru.yandex.practicum.filmorate.model.Event;
+import ru.yandex.practicum.filmorate.model.EventValue;
+import ru.yandex.practicum.filmorate.model.OperationValue;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.EventStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import javax.validation.Valid;
@@ -16,9 +20,12 @@ import java.util.stream.Collectors;
 @Validated
 @Slf4j
 public class UserService extends AbstractModelService<User, UserStorage> {
+    private final EventStorage eventStorage;
+
     @Autowired
-    public UserService(final UserStorage storage) {
+    public UserService(final UserStorage storage, EventStorage eventStorage) {
         super(storage);
+        this.eventStorage = eventStorage;
     }
 
     @Override
@@ -47,8 +54,7 @@ public class UserService extends AbstractModelService<User, UserStorage> {
         return storage.read(friendsIds);
     }
 
-    public List<User> getCommonFriends(@Valid @Positive Long firstUserid
-            , @Valid @Positive Long secondUserId) {
+    public List<User> getCommonFriends(@Valid @Positive Long firstUserid, @Valid @Positive Long secondUserId) {
         Set<Long> firstUsersFriends = storage.read(firstUserid).getFriends();
         Set<Long> secondUsersFriends = storage.read(secondUserId).getFriends();
         Set<Long> commonFriends = firstUsersFriends.stream()
@@ -77,6 +83,7 @@ public class UserService extends AbstractModelService<User, UserStorage> {
             //Односторонняя связь
             storage.insertFriendship(id, friendId);
         }
+        eventStorage.create(new Event(new Date().getTime(), id, EventValue.FRIEND, OperationValue.ADD, friendId));
         log.info("Friendship between {} and {} added", id, friendId);
     }
 
@@ -99,6 +106,20 @@ public class UserService extends AbstractModelService<User, UserStorage> {
             //двойная связь. friendId  добавил первым
             storage.updateFriendship(friendId, id, false, friendId, id);
         }
+        eventStorage.create(new Event(new Date().getTime(), id, EventValue.FRIEND, OperationValue.REMOVE, friendId));
         log.info("Friendship between {} and {} removed", friendId, user);
     }
+
+    public void delete(Long userId) {
+        storage.delete(userId);
+        log.info("User with id {} is deleted", userId);
+    }
+
+    public List<Event> getEventsByUser(Long id) {
+        storage.read(id);
+        List<Event> result = eventStorage.readByUser(id);
+        log.info("User {} events read", id);
+        return result;
+    }
+
 }

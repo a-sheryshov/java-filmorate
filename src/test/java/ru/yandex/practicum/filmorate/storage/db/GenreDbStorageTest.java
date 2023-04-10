@@ -11,7 +11,7 @@ import ru.yandex.practicum.filmorate.model.Genre;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @SpringBootTest
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
@@ -47,9 +47,9 @@ class GenreDbStorageTest {
 
         List<Genre> actual = genreStorage.readAll();
         int firstId = actual.size() - 2;
-        int second_id = actual.size() - 1;
-        assertEquals(firstExpected,  actual.get(firstId));
-        assertEquals(secondExpected, actual.get(second_id));
+        int secondId = actual.size() - 1;
+        assertEquals(firstExpected, actual.get(firstId));
+        assertEquals(secondExpected, actual.get(secondId));
         assertEquals(recordCount, actual.size());
     }
 
@@ -59,8 +59,8 @@ class GenreDbStorageTest {
         Genre expected = getFirstTestGenre(firstId);
         genreStorage.create(expected);
         Genre actual = genreStorage.read(expected.getId());
-        assertEquals(expected.getId(),actual.getId());
-        assertEquals(expected.getName(),actual.getName());
+        assertEquals(expected.getId(), actual.getId());
+        assertEquals(expected.getName(), actual.getName());
     }
 
     @Test

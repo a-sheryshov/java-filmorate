@@ -19,9 +19,9 @@ import static org.junit.jupiter.api.Assertions.*;
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.ANY)
 class UserDbStorageTest {
-    private final UserDbStorage userStorage;
     private static final String EMAIL1 = "test1@test.test";
     private static final String EMAIL2 = "test2@test.test";
+    private final UserDbStorage userStorage;
 
     @Test
     void shouldReadCreatedUser() {
@@ -39,7 +39,6 @@ class UserDbStorageTest {
         User secondExpectedUser = getSecondTestUser();
         userStorage.create(secondExpectedUser);
         List<User> expected = List.of(firstExpectedUser, secondExpectedUser);
-
         List<User> actual = userStorage.readAll();
         assertEquals(expected, actual);
         assertEquals(2, actual.size());
@@ -83,14 +82,14 @@ class UserDbStorageTest {
         firstExpectedUser.getFriends().add(secondExpectedUser.getId());
         secondExpectedUser.getFriends().add(firstExpectedUser.getId());
         userStorage.insertFriendship(firstExpectedUser.getId(), secondExpectedUser.getId());
-        userStorage.updateFriendship(firstExpectedUser.getId(), secondExpectedUser.getId()
-                , true, firstExpectedUser.getId(), secondExpectedUser.getId());
+        userStorage.updateFriendship(firstExpectedUser.getId(), secondExpectedUser.getId(),
+                true, firstExpectedUser.getId(), secondExpectedUser.getId());
         User firstActual = userStorage.read(firstExpectedUser.getId());
         User secondActual = userStorage.read(secondExpectedUser.getId());
         assertEquals(firstExpectedUser, firstActual);
         assertEquals(secondExpectedUser, secondActual);
-        assertTrue(userStorage.containsFriendship(firstExpectedUser.getId()
-                , secondExpectedUser.getId(), true));
+        assertTrue(userStorage.containsFriendship(firstExpectedUser.getId(),
+                secondExpectedUser.getId(), true));
 
 
     }
@@ -108,14 +107,14 @@ class UserDbStorageTest {
         firstExpectedUser.getFriends().add(secondExpectedUser.getId());
         secondExpectedUser.getFriends().add(firstExpectedUser.getId());
         userStorage.insertFriendship(firstExpectedUser.getId(), secondExpectedUser.getId());
-        userStorage.updateFriendship(firstExpectedUser.getId(), secondExpectedUser.getId()
-                , true, firstExpectedUser.getId(), secondExpectedUser.getId());
+        userStorage.updateFriendship(firstExpectedUser.getId(), secondExpectedUser.getId(),
+                true, firstExpectedUser.getId(), secondExpectedUser.getId());
         User firstActual = userStorage.read(firstExpectedUser.getId());
         User secondActual = userStorage.read(secondExpectedUser.getId());
         assertEquals(firstExpectedUser, firstActual);
         assertEquals(secondExpectedUser, secondActual);
-        assertTrue(userStorage.containsFriendship(firstExpectedUser.getId()
-                , secondExpectedUser.getId(), true));
+        assertTrue(userStorage.containsFriendship(firstExpectedUser.getId(),
+                secondExpectedUser.getId(), true));
         userStorage.removeFriendship(firstExpectedUser.getId(), secondExpectedUser.getId());
         userStorage.removeFriendship(secondExpectedUser.getId(), firstExpectedUser.getId());
         firstExpectedUser.getFriends().remove(secondExpectedUser.getId());
@@ -124,8 +123,8 @@ class UserDbStorageTest {
         secondActual = userStorage.read(secondExpectedUser.getId());
         assertEquals(firstExpectedUser, firstActual);
         assertEquals(secondExpectedUser, secondActual);
-        assertFalse(userStorage.containsFriendship(firstExpectedUser.getId()
-                , secondExpectedUser.getId(), true));
+        assertFalse(userStorage.containsFriendship(firstExpectedUser.getId(),
+                secondExpectedUser.getId(), true));
 
     }
 

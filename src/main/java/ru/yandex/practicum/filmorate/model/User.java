@@ -17,6 +17,8 @@ import java.util.Set;
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
 public class User extends AbstractModel {
+    private final Set<Long> friends = new HashSet<>();
+    private final Set<Long> likes = new HashSet<>();
     private String name;
     @NotBlank(message = "Email is mandatory")
     @Email(message = "Wrong email format")
@@ -26,9 +28,5 @@ public class User extends AbstractModel {
     private String login;
     @Past(message = "Wrong birthday date")
     private LocalDate birthday;
-
-    private final Set<Long> friends = new HashSet<>();
-
-    private final Set<Long> likes = new HashSet<>();
 
 }

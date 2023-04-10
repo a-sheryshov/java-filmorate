@@ -15,7 +15,6 @@ import ru.yandex.practicum.filmorate.model.AbstractModel;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
-
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -24,6 +23,7 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public class UserDbStorage implements UserStorage {
     private final NamedParameterJdbcTemplate jdbcTemplate;
+
     private final UserMapper userMapper;
 
     @Override
@@ -92,14 +92,14 @@ public class UserDbStorage implements UserStorage {
         parameterSource.addValue("birthday", user.getBirthday());
         parameterSource.addValue("uid", user.getId());
         String sql = "UPDATE USERS SET LOGIN = :login, EMAIL = :email, NAME = :name, BIRTHDAY = :birthday " +
-                        "WHERE USER_ID = :uid";
+                "WHERE USER_ID = :uid";
         jdbcTemplate.update(sql, parameterSource);
         return user;
     }
 
     @Override
     public boolean containsFriendship(Long filterId1, Long filterId2, Boolean filterConfirmed) {
-        String sql = "SELECT * FROM FRIENDSHIP WHERE USER_ID1 = ? AND USER_ID2 = ? AND  CONFIRMED = ?";
+        String sql = "SELECT * FROM FRIENDSHIP WHERE USER_ID1 = ? AND USER_ID2 = ? AND  IS_CONFIRMED = ?";
         SqlRowSet rows = jdbcTemplate.getJdbcTemplate().queryForRowSet(sql, filterId1, filterId2, filterConfirmed);
         return rows.next();
     }
@@ -107,14 +107,14 @@ public class UserDbStorage implements UserStorage {
     @Override
     public void updateFriendship(Long id1, Long id2, boolean confirmed, Long filterId1, Long filterId2) {
         String sql =
-                "UPDATE FRIENDSHIP SET USER_ID1 = ?, USER_ID2 = ?, CONFIRMED = ? " +
+                "UPDATE FRIENDSHIP SET USER_ID1 = ?, USER_ID2 = ?, IS_CONFIRMED = ? " +
                         "WHERE USER_ID1 = ? AND USER_ID2 = ?";
         jdbcTemplate.getJdbcTemplate().update(sql, id1, id2, confirmed, filterId1, filterId2);
     }
 
     @Override
     public void insertFriendship(Long id, Long friendId) {
-        String sql = "INSERT INTO FRIENDSHIP (USER_ID1, USER_ID2, CONFIRMED) VALUES(:uid, :fr_id, :confirmed)";
+        String sql = "INSERT INTO FRIENDSHIP (USER_ID1, USER_ID2, IS_CONFIRMED) VALUES(:uid, :fr_id, :confirmed)";
         MapSqlParameterSource parameterSource = new MapSqlParameterSource();
         parameterSource.addValue("uid", id);
         parameterSource.addValue("fr_id", friendId);
@@ -134,7 +134,10 @@ public class UserDbStorage implements UserStorage {
         return filmRows.next();
     }
 
-    private void checkUser(Long id) {
+
+    @Override
+
+    public void checkUser(Long id) {
         String sql = "SELECT * FROM USERS WHERE USER_ID = ?";
         List<User> result = jdbcTemplate.getJdbcTemplate().query(sql, userMapper, id);
         if (result.isEmpty()) {
@@ -142,7 +145,7 @@ public class UserDbStorage implements UserStorage {
         }
     }
 
-    private void checkUser(List <User> users) {
+    private void checkUser(List<User> users) {
         Set<Long> ids = users.stream().map(AbstractModel::getId).collect(Collectors.toSet());
         String sql =
                 "SELECT COUNT(*) AS COUNT FROM USERS u WHERE u.USER_ID IN (:ids)";
@@ -150,10 +153,10 @@ public class UserDbStorage implements UserStorage {
         SqlRowSet result = jdbcTemplate.queryForRowSet(sql, parameters);
         if (result.next()) {
             if (result.getInt("COUNT") != ids.size())
-                throw new  ObjectNotFoundException("check id's");
+                throw new ObjectNotFoundException("check id's");
             return;
         }
-        throw new  ObjectNotFoundException("check id's");
+        throw new ObjectNotFoundException("check id's");
     }
 
     private void readFriends(User user) {
@@ -161,11 +164,11 @@ public class UserDbStorage implements UserStorage {
         String sql =
                 "(SELECT USER_ID2 ID FROM FRIENDSHIP  WHERE USER_ID1 = ?) " +
                         "UNION " +
-                        "(SELECT USER_ID1 ID FROM FRIENDSHIP  WHERE USER_ID2 = ? AND  CONFIRMED = true)";
+                        "(SELECT USER_ID1 ID FROM FRIENDSHIP  WHERE USER_ID2 = ? AND  IS_CONFIRMED = true)";
         List<Long> friends = jdbcTemplate.getJdbcTemplate().queryForList(sql, Long.class,
                 user.getId(), user.getId());
         user.getFriends().clear();
-        for (Long id : friends){
+        for (Long id : friends) {
             user.getFriends().add(id);
         }
     }
@@ -180,14 +183,15 @@ public class UserDbStorage implements UserStorage {
                 "(SELECT USER_ID2 FRIEND_ID, USER_ID1 USER_ID FROM FRIENDSHIP  WHERE USER_ID1 IN (:id1)) " +
                         "UNION " +
                         "(SELECT USER_ID1 FRIEND_ID, USER_ID1 USER_ID FROM FRIENDSHIP " +
-                        "WHERE USER_ID2 IN (:id2) AND  CONFIRMED = true)";
+                        "WHERE USER_ID2 IN (:id2) AND  IS_CONFIRMED = true)";
         SqlRowSet sqlRowSet = jdbcTemplate.queryForRowSet(sql, parameterSource);
         while (sqlRowSet.next()) {
             users.stream()
                     .filter(user -> user.getId().equals(sqlRowSet.getLong("USER_ID")))
                     .findFirst()
                     .ifPresentOrElse(user -> user.getFriends().add(sqlRowSet.getLong("FRIEND_ID")),
-                            ()-> {});
+                            () -> {
+                            });
         }
     }
 
@@ -212,7 +216,17 @@ public class UserDbStorage implements UserStorage {
                     .filter(user -> user.getId().equals(sqlRowSet.getLong("USER_ID")))
                     .findFirst()
                     .ifPresentOrElse(user -> user.getLikes().add(sqlRowSet.getLong("FILM_ID")),
-                            ()->{});
+                            () -> {
+                            });
         }
+    }
+
+    @Override
+    public void delete(Long userId) {
+
+        checkUser(userId);
+        String sql = "DELETE FROM USERS WHERE user_id = ?";
+
+        jdbcTemplate.getJdbcTemplate().update(sql, userId);
     }
 }
